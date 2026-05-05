@@ -336,13 +336,13 @@ Tabella CSV filtrata:
 
 
 def _call_gemini(prompt: str) -> str:
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise HTTPException(
             status_code=500,
             detail=(
-                "Gemini API key is missing. Set GEMINI_API_KEY (or GOOGLE_API_KEY) "
-                "in the .env file."
+                "Gemini API key is missing. Set GEMINI_API_KEY "
+                "in environment variables."
             ),
         )
 
