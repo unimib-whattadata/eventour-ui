@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import heapq
 import io
 import json
 import os
@@ -485,6 +486,68 @@ def _build_edge_lookup(rows: list[dict[str, str]]) -> dict[tuple[str, str], floa
     return edge_lookup
 
 
+def _find_candidate_paths_without_llm(
+    filtered_rows: list[dict[str, str]],
+    start_node: str,
+    end_node: str,
+    max_stop_intermedi: int,
+    tempo_massimo_minuti: int,
+    max_paths: int = 3,
+) -> list[list[str]]:
+    edge_lookup = _build_edge_lookup(filtered_rows)
+    adjacency: dict[str, list[tuple[str, float]]] = {}
+
+    for (from_poi, to_poi), duration_seconds in edge_lookup.items():
+        adjacency.setdefault(from_poi, []).append((to_poi, duration_seconds))
+
+    for node_id, neighbors in adjacency.items():
+        neighbors.sort(key=lambda edge: (edge[1], edge[0]))
+        adjacency[node_id] = neighbors
+
+    max_total_nodes = max_stop_intermedi + 2
+    tempo_massimo_secondi = tempo_massimo_minuti * 60
+    max_expansions = int(os.getenv("ROUTE_FALLBACK_MAX_EXPANSIONS", "40000"))
+
+    queue: list[tuple[float, list[str]]] = [(0.0, [start_node])]
+    candidate_paths: list[list[str]] = []
+    seen_paths: set[tuple[str, ...]] = set()
+    expansions = 0
+
+    while (
+        queue
+        and len(candidate_paths) < max_paths
+        and expansions < max_expansions
+    ):
+        total_duration, path = heapq.heappop(queue)
+        current_node = path[-1]
+
+        if current_node == end_node and len(path) >= 2:
+            path_tuple = tuple(path)
+            if path_tuple not in seen_paths:
+                candidate_paths.append(path)
+                seen_paths.add(path_tuple)
+            continue
+
+        if len(path) >= max_total_nodes:
+            continue
+
+        for next_node, edge_duration in adjacency.get(current_node, []):
+            if next_node in path:
+                continue
+            next_total_duration = total_duration + edge_duration
+            if (
+                tempo_massimo_secondi > 0
+                and next_total_duration > tempo_massimo_secondi
+            ):
+                continue
+            heapq.heappush(queue, (next_total_duration, [*path, next_node]))
+            expansions += 1
+            if expansions >= max_expansions:
+                break
+
+    return candidate_paths
+
+
 def _augment_paths_with_long_candidate(
     candidate_paths: list[list[str]],
     filtered_rows: list[dict[str, str]],
@@ -749,8 +812,32 @@ def cerca_itinerari(payload: CercaItinerariPayload) -> dict[str, Any]:
         )
 
     prompt = _build_gemini_prompt(payload=payload, filtered_rows=filtered_rows)
-    llm_response = _call_gemini(prompt)
-    raw_paths = _extract_paths(llm_response, max_paths=3)
+    fallback_used = False
+
+    try:
+        llm_response = _call_gemini(prompt)
+        raw_paths = _extract_paths(llm_response, max_paths=3)
+    except HTTPException as exc:
+        if exc.status_code not in (502, 503):
+            raise
+
+        raw_paths = _find_candidate_paths_without_llm(
+            filtered_rows=filtered_rows,
+            start_node=payload.nodo_partenza,
+            end_node=payload.nodo_arrivo,
+            max_stop_intermedi=payload.max_stop_intermedi,
+            tempo_massimo_minuti=payload.tempo_massimo_minuti,
+            max_paths=3,
+        )
+        if not raw_paths:
+            raise
+
+        fallback_used = True
+        llm_response = (
+            "Gemini temporarily unavailable: route candidates generated "
+            "with local deterministic fallback."
+        )
+
     raw_paths = _augment_paths_with_long_candidate(
         candidate_paths=raw_paths,
         filtered_rows=filtered_rows,
@@ -776,6 +863,8 @@ def cerca_itinerari(payload: CercaItinerariPayload) -> dict[str, Any]:
         if itineraries
         else "No routes found with the selected constraints."
     )
+    if fallback_used and itineraries:
+        message = f"{message} Generated with fallback while Gemini was unavailable."
 
     return {
         "status": status,
