@@ -55,3 +55,11 @@ body,
 .eventour-popup .leaflet-popup-tip {
   background: var(--color-base-100);
 }
+
+.map-dark-theme .eventour-popup .leaflet-popup-close-button {
+  color: #ffffff !important;
+}
+
+.map-dark-theme .eventour-popup .leaflet-popup-close-button:hover {
+  color: #e2e8f0 !important;
+}

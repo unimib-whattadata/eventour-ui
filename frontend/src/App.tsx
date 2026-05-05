@@ -661,6 +661,9 @@ function MapPage({ theme }: { theme: Theme }) {
     route: string;
     index: number;
   } | null>(null);
+  const mapCardTitleText = theme === "dark" ? "text-white" : "";
+  const mapCardSubtitleText =
+    theme === "dark" ? "text-white/85" : "text-base-content/75";
   const markerRefs = useRef<Record<string, L.Marker | null>>({});
   const milanCenter: [number, number] = [45.4642, 9.19];
   const sidebarGradient =
@@ -1202,20 +1205,22 @@ function MapPage({ theme }: { theme: Theme }) {
                       <div className="collapse-title pr-10">
                         <div className="flex items-center justify-between gap-2">
                           <h4 className="text-sm font-semibold">
-                            Route {itineraryIndex + 1}
+                            <span className={mapCardTitleText}>
+                              Route {itineraryIndex + 1}
+                            </span>
                           </h4>
                           <span className="badge badge-primary rounded-md">
                             {itinerary.tempo_totale_minuti} min
                           </span>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                          <span className="text-base-content/75">
+                          <span className={mapCardSubtitleText}>
                             Intermediate stops
                           </span>
                           <span className="badge badge-outline rounded-md">
                             {itinerary.stop_intermedi_totali}
                           </span>
-                          <span className="text-base-content/75">
+                          <span className={mapCardSubtitleText}>
                             Total points
                           </span>
                           <span className="badge badge-outline rounded-md">
@@ -1264,10 +1269,12 @@ function MapPage({ theme }: { theme: Theme }) {
                                       : "border-base-300"
                                   }`}
                                 >
-                                  <p className="font-semibold">{point.label}</p>
+                                  <p className={`font-semibold ${mapCardTitleText}`}>
+                                    {point.label}
+                                  </p>
                                   <div className="mt-2 grid gap-1.5">
                                     <div className="flex items-center gap-2">
-                                      <span className="w-12 text-base-content/75">
+                                      <span className={`w-12 ${mapCardSubtitleText}`}>
                                         Node
                                       </span>
                                       <span className="badge badge-primary badge-sm rounded-md">
@@ -1275,7 +1282,7 @@ function MapPage({ theme }: { theme: Theme }) {
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <span className="w-12 text-base-content/75">
+                                      <span className={`w-12 ${mapCardSubtitleText}`}>
                                         Type
                                       </span>
                                       <span className="badge badge-secondary badge-sm rounded-md">
@@ -1283,7 +1290,7 @@ function MapPage({ theme }: { theme: Theme }) {
                                       </span>
                                     </div>
                                     <div className="flex items-start gap-2">
-                                      <span className="w-12 pt-1 text-base-content/75">
+                                      <span className={`w-12 pt-1 ${mapCardSubtitleText}`}>
                                         Place
                                       </span>
                                       <span className="badge badge-accent badge-sm h-auto whitespace-normal rounded-md py-1 text-left leading-tight">
@@ -1291,7 +1298,7 @@ function MapPage({ theme }: { theme: Theme }) {
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <span className="w-12 text-base-content/75">
+                                      <span className={`w-12 ${mapCardSubtitleText}`}>
                                         Lat
                                       </span>
                                       <span className="badge badge-info badge-sm rounded-md">
@@ -1299,7 +1306,7 @@ function MapPage({ theme }: { theme: Theme }) {
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <span className="w-12 text-base-content/75">
+                                      <span className={`w-12 ${mapCardSubtitleText}`}>
                                         Lng
                                       </span>
                                       <span className="badge badge-success badge-sm rounded-md">
@@ -1390,22 +1397,24 @@ function MapPage({ theme }: { theme: Theme }) {
               >
                 <Popup className="eventour-popup">
                   <div className="w-[240px] rounded-md bg-base-100 p-2 text-xs">
-                    <p className="font-semibold text-sm">{point.label}</p>
+                    <p className={`font-semibold text-sm ${mapCardTitleText}`}>
+                      {point.label}
+                    </p>
                     <div className="mt-2 grid gap-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="w-12 text-base-content/75">Node</span>
+                        <span className={`w-12 ${mapCardSubtitleText}`}>Node</span>
                         <span className="badge badge-primary badge-sm rounded-md">
                           {point.poi_id}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-12 text-base-content/75">Type</span>
+                        <span className={`w-12 ${mapCardSubtitleText}`}>Type</span>
                         <span className="badge badge-secondary badge-sm rounded-md">
                           {point.type || "-"}
                         </span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <span className="w-12 pt-1 text-base-content/75">
+                        <span className={`w-12 pt-1 ${mapCardSubtitleText}`}>
                           Place
                         </span>
                         <span className="badge badge-accent badge-sm h-auto whitespace-normal rounded-md py-1 text-left leading-tight">
@@ -1413,13 +1422,13 @@ function MapPage({ theme }: { theme: Theme }) {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-12 text-base-content/75">Lat</span>
+                        <span className={`w-12 ${mapCardSubtitleText}`}>Lat</span>
                         <span className="badge badge-info badge-sm rounded-md">
                           {point.latitude}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-12 text-base-content/75">Lng</span>
+                        <span className={`w-12 ${mapCardSubtitleText}`}>Lng</span>
                         <span className="badge badge-success badge-sm rounded-md">
                           {point.longitude}
                         </span>
