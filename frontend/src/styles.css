@@ -23,15 +23,35 @@ body,
 }
 
 .map-dark-theme {
-  background: #05070c;
+  background: #02040b;
 }
 
-.map-dark-theme .leaflet-tile-pane img {
-  filter: brightness(0.92) contrast(1.24) saturate(1.65) hue-rotate(10deg);
+.map-dark-theme .map-dark-base {
+  filter: brightness(0.52) contrast(1.36) saturate(1.6) hue-rotate(-10deg);
+  opacity: 0.97;
+}
+
+.map-dark-theme .map-dark-labels {
+  filter: brightness(1.15) contrast(1.2) saturate(0.98);
+  opacity: 0.98;
 }
 
 .map-dark-theme .leaflet-control-zoom a,
 .map-dark-theme .leaflet-control-attribution {
-  background-color: rgba(2, 6, 23, 0.85);
+  background-color: rgba(15, 23, 42, 0.82);
   color: #e2e8f0;
+}
+
+.eventour-popup .leaflet-popup-content-wrapper {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.28);
+}
+
+.eventour-popup .leaflet-popup-content {
+  margin: 0;
+}
+
+.eventour-popup .leaflet-popup-tip {
+  background: var(--color-base-100);
 }

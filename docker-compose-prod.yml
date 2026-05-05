@@ -1,24 +1,45 @@
-version: '3.8'
+version: "3.8"
 
 services:
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
     ports:
-      - "80:80"
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       - ./pois_with_wikidata.csv:/data/pois_with_wikidata.csv:ro
       - ./poi_distances.csv:/data/poi_distances.csv:ro
-      - ./.env:/app/.env:ro
     environment:
-      - ENVIRONMENT=prod
+      ENVIRONMENT: ${ENVIRONMENT:-prod}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_MODEL_FALLBACKS: ${GEMINI_MODEL_FALLBACKS:-gemini-2.5-flash-lite}
+      GRAPHDB_SPARQL_ENDPOINT: ${GRAPHDB_SPARQL_ENDPOINT:-https://eventour-graphdb.whattadata.it/sparql?repositoryId=eventour}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 25s
+    restart: unless-stopped
