@@ -722,12 +722,8 @@ function MapPage({ theme }: { theme: Theme }) {
     },
   });
 
-  const selectedStartNode = watch("nodo_partenza");
-  const selectedDestinationNode = watch("nodo_arrivo");
   const selectedFilters = watch("filtri") ?? [];
   const allFiltersSelected = selectedFilters.length === placeFilters.length;
-  const hasSameStartAndDestination =
-    Boolean(selectedStartNode) && selectedStartNode === selectedDestinationNode;
 
   const mapTile = useMemo<MapTilesConfig>(
     () =>
@@ -1142,8 +1138,7 @@ function MapPage({ theme }: { theme: Theme }) {
                 requestState === "loading" ||
                 poisState === "loading" ||
                 poiOptions.length === 0 ||
-                allFiltersSelected ||
-                hasSameStartAndDestination
+                allFiltersSelected
               }
             >
               {requestState === "loading" ? (
