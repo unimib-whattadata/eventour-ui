@@ -86,7 +86,7 @@ def _resolve_data_file(filename: str) -> Path:
         Path.cwd() / filename,
     ]
     for file_path in candidates:
-        if file_path.exists():
+        if file_path.is_file():
             return file_path
     raise FileNotFoundError(
         f"File '{filename}' not found. Checked paths: {', '.join(str(path) for path in candidates)}"

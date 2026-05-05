@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY backend/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+COPY backend/ /app/
+
+# Bundle static CSV datasets directly in the image to avoid bind-mount
+# file/directory ambiguity on some deployment platforms.
+RUN mkdir -p /data
+COPY pois_with_wikidata.csv /data/pois_with_wikidata.csv
+COPY poi_distances.csv /data/poi_distances.csv
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

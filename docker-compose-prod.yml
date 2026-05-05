@@ -22,13 +22,10 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile.prod
     expose:
       - "8000"
-    volumes:
-      - ./pois_with_wikidata.csv:/data/pois_with_wikidata.csv:ro
-      - ./poi_distances.csv:/data/poi_distances.csv:ro
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-prod}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
