@@ -27,8 +27,9 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import OntologyPage from "./OntologyPage";
 
-type Tab = "home" | "map" | "sparql" | "about";
+type Tab = "home" | "map" | "ontology" | "sparql" | "about";
 type Theme = "light" | "dark";
 type RequestState = "idle" | "loading" | "success" | "error";
 type MapTilesConfig = {
@@ -190,6 +191,7 @@ const parseSparqlNumericCell = (value: unknown): number | null => {
 const tabs: Array<{ id: Tab; label: string }> = [
   { id: "home", label: "Home" },
   { id: "map", label: "Map" },
+  { id: "ontology", label: "Ontology" },
   { id: "sparql", label: "SPARQL" },
   { id: "about", label: "About" },
 ];
@@ -643,6 +645,8 @@ function App() {
       <div className="relative z-10 pt-[4.5rem]">
         {activeTab === "map" ? (
           <MapPage theme={theme} />
+        ) : activeTab === "ontology" ? (
+          <OntologyPage theme={theme} />
         ) : (
           <main
             className={`mx-auto h-[calc(100vh-4.5rem-16.5rem)] w-full max-w-[1160px] overflow-y-auto px-4 py-8 pb-12 md:px-6 md:py-9 md:pb-12 ${
@@ -656,7 +660,7 @@ function App() {
         )}
       </div>
 
-      {activeTab !== "map" ? <AppFooter /> : null}
+      {activeTab !== "map" && activeTab !== "ontology" ? <AppFooter /> : null}
     </div>
   );
 }

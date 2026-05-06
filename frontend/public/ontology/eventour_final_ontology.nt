@@ -1,0 +1,593 @@
+<http://eventour.unimib.it/hasTimetableSummary> <http://www.w3.org/2000/01/rdf-schema#label> "has timetable summary"@en .
+<http://eventour.unimib.it/lineNumber> <http://www.w3.org/2000/01/rdf-schema#label> "line number"@en .
+<http://eventour.unimib.it/offPeakTrips> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/interchangeInformation> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/placement-context> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/placement-context/marciapiede> .
+<http://eventour.unimib.it/category/museum-collection> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/TransportEntity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/WiFiAccessPoint> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/ServiceAccessPoint> .
+<http://eventour.unimib.it/hasPrimaryFamily> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/dataset-theme/public-service> .
+<http://eventour.unimib.it/scheme/vehicle-type> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/vehicle-type/velocipedi> .
+<http://eventour.unimib.it/toiletType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/parkingAreaIdentifier> <http://www.w3.org/2000/01/rdf-schema#label> "parking area identifier"@en .
+<http://eventour.unimib.it/Stop> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/streetName> <http://www.w3.org/2000/01/rdf-schema#label> "street name"@en .
+<http://eventour.unimib.it/dailyTrips> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/servicePattern> <http://www.w3.org/2000/01/rdf-schema#label> "service pattern"@en .
+<http://eventour.unimib.it/stationNumber> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/role/context-entity> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourRoleScheme> .
+<http://eventour.unimib.it/category/district-streetscape> <http://www.w3.org/2004/02/skos/core#prefLabel> "district streetscape" .
+<http://eventour.unimib.it/ordinance> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/curation-label/secondary-poi> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/CurationLabelScheme> .
+<http://eventour.unimib.it/scheme/day-type> <http://www.w3.org/2000/01/rdf-schema#label> "Transit day type concept scheme"@en .
+<http://eventour.unimib.it/lineNumber> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/Bench> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/performing-arts-entertainment> .
+<http://eventour.unimib.it/Project> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanThing> .
+<http://eventour.unimib.it/stationLayoutType> <http://www.w3.org/2000/01/rdf-schema#label> "station layout type"@en .
+<http://eventour.unimib.it/routeLengthKm> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/route-direction> <http://www.w3.org/2004/02/skos/core#prefLabel> "Route direction values"@en .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/public-art> .
+<http://eventour.unimib.it/status> <http://www.w3.org/2000/01/rdf-schema#label> "status"@en .
+<http://eventour.unimib.it/validFrom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/nilName> <http://www.w3.org/2000/01/rdf-schema#label> "NIL name"@en .
+<http://eventour.unimib.it/scheme/vehicle-type> <http://www.w3.org/2004/02/skos/core#prefLabel> "Vehicle type values"@en .
+<http://eventour.unimib.it/SourceRecord> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/hasCurationLabel> <http://www.w3.org/2000/01/rdf-schema#comment> "Stores the normalized curation label assigned during semantic place curation."@en .
+<http://eventour.unimib.it/Stop> <http://www.w3.org/2000/01/rdf-schema#label> "Transit stop"@en .
+<http://eventour.unimib.it/scheme/commercial-category> <http://www.w3.org/2000/01/rdf-schema#label> "Commercial category concept scheme"@en .
+<http://eventour.unimib.it/curation-label/context-entity> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/CurationLabelScheme> .
+<http://eventour.unimib.it/assetDescription> <http://www.w3.org/2000/01/rdf-schema#label> "asset description"@en .
+<http://eventour.unimib.it/hasCurationLabel> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/BicycleParkingArea> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/PicnicTable> <http://www.w3.org/2000/01/rdf-schema#label> "Picnic table"@en .
+<http://eventour.unimib.it/originalDownloadURLToBeAdded> <http://www.w3.org/2000/01/rdf-schema#label> "original download URL to be added"@en .
+<http://eventour.unimib.it/category/park-garden-nature> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/category/district-streetscape> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/role/secondary-poi> <http://www.w3.org/2004/02/skos/core#prefLabel> "Secondary POI"@en .
+<http://eventour.unimib.it/EVChargingStation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Facility> .
+<http://eventour.unimib.it/hasEventourRole> <http://www.w3.org/2000/01/rdf-schema#label> "has Eventour role"@en .
+<http://eventour.unimib.it/EventourOntology> <http://www.w3.org/2002/07/owl#versionInfo> "2026-05-03" .
+<http://eventour.unimib.it/sourceObjectId> <http://www.w3.org/2000/01/rdf-schema#label> "source object identifier"@en .
+<http://eventour.unimib.it/BicycleParkingArea> <http://www.w3.org/2000/01/rdf-schema#label> "Bicycle parking area"@en .
+<http://eventour.unimib.it/scheme/route-direction> <http://www.w3.org/2000/01/rdf-schema#label> "Route direction concept scheme"@en .
+<http://eventour.unimib.it/conversionRuleNote> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/dayType> <http://www.w3.org/2000/01/rdf-schema#label> "day type"@en .
+<http://eventour.unimib.it/category/historic-architecture> <http://www.w3.org/2004/02/skos/core#prefLabel> "historic architecture" .
+<http://eventour.unimib.it/RoutePattern> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/TransportEntity> .
+<http://eventour.unimib.it/interchangesWithLine> <http://www.w3.org/2000/01/rdf-schema#label> "interchanges with line"@en .
+<http://eventour.unimib.it/scheme/status> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/status/active> .
+<http://eventour.unimib.it/scheme/station-layout> <http://www.w3.org/2000/01/rdf-schema#label> "Station layout concept scheme"@en .
+<http://eventour.unimib.it/routeDirection> <http://www.w3.org/2000/01/rdf-schema#label> "route direction"@en .
+<http://eventour.unimib.it/endTime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/hasStopInRoute> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/GeometrySample> <http://www.w3.org/2000/01/rdf-schema#label> "Geometry sample"@en .
+<http://eventour.unimib.it/EVChargingStation> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/scheme/charging-typology> <http://www.w3.org/2000/01/rdf-schema#label> "Charging typology concept scheme"@en .
+<http://eventour.unimib.it/sourceIdentifierField> <http://www.w3.org/2000/01/rdf-schema#label> "source identifier field"@en .
+<http://eventour.unimib.it/scheme/urban-belt> <http://www.w3.org/2000/01/rdf-schema#label> "Urban belt concept scheme"@en .
+<http://eventour.unimib.it/scheme/facility-type> <http://www.w3.org/2000/01/rdf-schema#label> "Facility type concept scheme"@en .
+<http://eventour.unimib.it/scheme/facility-type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/role/context-entity> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourRoleScheme> .
+<http://eventour.unimib.it/scheme/urban-belt> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/scheme/parking-facility-category> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/parking-facility-category/interchange> .
+<http://eventour.unimib.it/scheme/vehicle-type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/sourceIdentifierField> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/areaIdentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/monument-memorial> <http://www.w3.org/2004/02/skos/core#prefLabel> "monument memorial" .
+<http://eventour.unimib.it/dayType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/shapeLength> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/commercial-category> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/role/primary-poi> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourRoleScheme> .
+<http://eventour.unimib.it/partOfProject> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/transport-mode> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/transport-mode/bus> .
+<http://eventour.unimib.it/RoutePattern> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/scheme/rack-type> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/rack-type/verona-ambrogio> .
+<http://eventour.unimib.it/ServiceAccessPoint> <http://www.w3.org/2000/01/rdf-schema#label> "Service access point"@en .
+<http://eventour.unimib.it/hasEventourCategory> <http://www.w3.org/2000/01/rdf-schema#comment> "Associates a primary or secondary place with a semantic Eventour category."@en .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/park-garden-nature> .
+<http://eventour.unimib.it/SourceRecord> <http://www.w3.org/2000/01/rdf-schema#label> "Source record"@en .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/gallery-art-space> .
+<http://eventour.unimib.it/sourceChargingTypologyCode> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/archaeological-ancient-site> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/parkingSpaces> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/infrastructureType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/charging-typology> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/charging-typology/qn> .
+<http://eventour.unimib.it/parkingAreaName> <http://www.w3.org/2000/01/rdf-schema#label> "parking area name"@en .
+<http://eventour.unimib.it/geometryCoordinatesSample> <http://www.w3.org/2000/01/rdf-schema#label> "geometry coordinates sample"@en .
+<http://eventour.unimib.it/dailyTrips> <http://www.w3.org/2000/01/rdf-schema#label> "daily trips"@en .
+<http://eventour.unimib.it/stop> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/EventourRoleScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/role/primary-poi> .
+<http://eventour.unimib.it/locatedOnStreet> <http://www.w3.org/2000/01/rdf-schema#label> "located on street"@en .
+<http://eventour.unimib.it/heightM> <http://www.w3.org/2000/01/rdf-schema#label> "height in meters"@en .
+<http://eventour.unimib.it/role/secondary-poi> <http://www.w3.org/2004/02/skos/core#definition> "Non-primary geolocated urban place candidate usable for operational tasks such as crowd redistribution or alternative routing."@en .
+<http://eventour.unimib.it/category/urban-landmark> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/providesAccessTo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/GeometrySample> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/PhysicalAsset> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.opengis.net/ont/geosparql#Feature> .
+<http://eventour.unimib.it/scheme/transport-mode> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/vehicleType> <http://www.w3.org/2000/01/rdf-schema#label> "vehicle type"@en .
+<http://eventour.unimib.it/scheme/day-type> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/day-type/holiday> .
+<http://eventour.unimib.it/inNIL> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/areaCode> <http://www.w3.org/2000/01/rdf-schema#label> "area code"@en .
+<http://eventour.unimib.it/streetType> <http://www.w3.org/2000/01/rdf-schema#label> "street type"@en .
+<http://eventour.unimib.it/scheme/implementation-status> <http://www.w3.org/2004/02/skos/core#prefLabel> "Implementation status values"@en .
+<http://eventour.unimib.it/StopInRoute> <http://www.w3.org/2000/01/rdf-schema#label> "Stop in route"@en .
+<http://eventour.unimib.it/routeType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/dataset-theme/green-urban-furniture> .
+<http://eventour.unimib.it/hasEventourRole> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/metadataCompletionNote> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/transportMode> <http://www.w3.org/2000/01/rdf-schema#label> "transport mode"@en .
+<http://eventour.unimib.it/nilInferenceMethod> <http://www.w3.org/2000/01/rdf-schema#label> "NIL inference method"@en .
+<http://eventour.unimib.it/NILArea> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/AdministrativeArea> .
+<http://eventour.unimib.it/scheme/parking-type> <http://www.w3.org/2004/02/skos/core#prefLabel> "Parking type values"@en .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/historic-architecture> .
+<http://eventour.unimib.it/hasSecondaryFamily> <http://www.w3.org/2000/01/rdf-schema#label> "has secondary family"@en .
+<http://eventour.unimib.it/MetroStation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Stop> .
+<http://eventour.unimib.it/category/museum-collection> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/validFrom> <http://www.w3.org/2000/01/rdf-schema#label> "valid from"@en .
+<http://eventour.unimib.it/TransportEntity> <http://www.w3.org/2000/01/rdf-schema#label> "Transport entity"@en .
+<http://eventour.unimib.it/numberOfDocks> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/areaIdentifier> <http://www.w3.org/2000/01/rdf-schema#label> "area identifier"@en .
+<http://eventour.unimib.it/sourceResponsibleOrganizationRole> <http://www.w3.org/2000/01/rdf-schema#label> "source responsible organization role"@en .
+<http://eventour.unimib.it/category/religious-heritage> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/SourceRecord> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/ns/prov#Entity> .
+<http://eventour.unimib.it/interchangeInformation> <http://www.w3.org/2000/01/rdf-schema#label> "interchange information"@en .
+<http://eventour.unimib.it/HistoricShop> <http://www.w3.org/2000/01/rdf-schema#label> "Historic shop"@en .
+<http://eventour.unimib.it/numberOfDocks> <http://www.w3.org/2000/01/rdf-schema#label> "number of docks"@en .
+<http://eventour.unimib.it/scheme/implementation-status> <http://www.w3.org/2000/01/rdf-schema#label> "Implementation status concept scheme"@en .
+<http://eventour.unimib.it/placementContext> <http://www.w3.org/2000/01/rdf-schema#label> "placement context"@en .
+<http://eventour.unimib.it/geometryCoordinatesSample> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/UrbanPlace> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.opengis.net/ont/geosparql#Feature> .
+<http://eventour.unimib.it/ServicePattern> <http://www.w3.org/2000/01/rdf-schema#label> "Service pattern"@en .
+<http://eventour.unimib.it/assetDescription> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/servicePattern> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/servedByLine> <http://www.w3.org/2000/01/rdf-schema#label> "served by line"@en .
+<http://eventour.unimib.it/scheme/status> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/status/existing> .
+<http://eventour.unimib.it/category/religious-heritage> <http://www.w3.org/2004/02/skos/core#prefLabel> "religious heritage" .
+<http://eventour.unimib.it/role/secondary-poi> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/hasEventourCategory> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/BikeSharingStation> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/category/science-education-attraction> <http://www.w3.org/2004/02/skos/core#prefLabel> "science education attraction" .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/archaeological-ancient-site> .
+<http://eventour.unimib.it/category/gallery-art-space> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/parkingType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/transport-mode> <http://www.w3.org/2004/02/skos/core#prefLabel> "Transport mode values"@en .
+<http://eventour.unimib.it/role/context-entity> <http://www.w3.org/2004/02/skos/core#definition> "Geolocated entity that provides urban context but is not treated as a candidate destination or redistribution anchor."@en .
+<http://eventour.unimib.it/category/district-streetscape> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/ordinance> <http://www.w3.org/2000/01/rdf-schema#label> "ordinance"@en .
+<http://eventour.unimib.it/BikeSharingStation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Facility> .
+<http://eventour.unimib.it/scheme/station-layout> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/EVChargingStation> <http://www.w3.org/2000/01/rdf-schema#label> "EV charging station"@en .
+<http://eventour.unimib.it/Infrastructure> <http://www.w3.org/2000/01/rdf-schema#label> "Infrastructure"@en .
+<http://eventour.unimib.it/category/monument-memorial> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/chargingTypology> <http://www.w3.org/2000/01/rdf-schema#label> "charging typology"@en .
+<http://eventour.unimib.it/scheme/route-direction> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/TransitLine> <http://www.w3.org/2000/01/rdf-schema#label> "Transit line"@en .
+<http://eventour.unimib.it/shapeArea> <http://www.w3.org/2000/01/rdf-schema#label> "shape area"@en .
+<http://eventour.unimib.it/Street> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanThing> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/cemetery-funerary-heritage> .
+<http://eventour.unimib.it/scheme/placement-context> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/placement-context/carreggiata> .
+<http://eventour.unimib.it/UrbanThing> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/hasEventourRole> <http://www.w3.org/2000/01/rdf-schema#comment> "Associates a semantic place with its application role in Eventour."@en .
+<http://eventour.unimib.it/scheme/transport-mode> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/transport-mode/metro> .
+<http://eventour.unimib.it/scheme/parking-type> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/parking-type/residenti-pubblici> .
+<http://eventour.unimib.it/shapeArea> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/inSubNIL> <http://www.w3.org/2000/01/rdf-schema#label> "in sub-NIL area"@en .
+<http://eventour.unimib.it/trunkDiameter> <http://www.w3.org/2000/01/rdf-schema#label> "trunk diameter"@en .
+<http://eventour.unimib.it/sequenceNumber> <http://www.w3.org/2000/01/rdf-schema#label> "sequence number"@en .
+<http://eventour.unimib.it/MetroStation> <http://www.w3.org/2000/01/rdf-schema#label> "Metro station"@en .
+<http://eventour.unimib.it/originalFileName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/implementation-status> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/variety> <http://www.w3.org/2000/01/rdf-schema#label> "variety"@en .
+<http://eventour.unimib.it/additionalInfo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/inferredNILName> <http://www.w3.org/2000/01/rdf-schema#label> "inferred NIL name"@en .
+<http://eventour.unimib.it/scheme/charging-infrastructure> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/charging-infrastructure/ac-normal> .
+<http://eventour.unimib.it/scheme/day-type> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/day-type/saturday> .
+<http://eventour.unimib.it/scheme/status> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/trunkDiameterCm> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/facilityCategory> <http://www.w3.org/2000/01/rdf-schema#label> "facility category"@en .
+<http://eventour.unimib.it/hasSecondaryFamily> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/uriPatternNote> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/interchangesWithLine> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/curation-label/primary-poi> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/category/performing-arts-entertainment> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/municipalityName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/public-art> <http://www.w3.org/2004/02/skos/core#prefLabel> "public art" .
+<http://eventour.unimib.it/geometryAvailabilityNote> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/DrinkingFountain> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Infrastructure> .
+<http://eventour.unimib.it/rackType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/numberOfChargingPoints> <http://www.w3.org/2000/01/rdf-schema#label> "number of charging points"@en .
+<http://eventour.unimib.it/category/monument-memorial> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/category/historic-architecture> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/Street> <http://www.w3.org/2000/01/rdf-schema#label> "Street"@en .
+<http://eventour.unimib.it/hasPrimaryFamily> <http://www.w3.org/2000/01/rdf-schema#label> "has primary family"@en .
+<http://eventour.unimib.it/category/urban-landmark> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/crownDiameterM> <http://www.w3.org/2000/01/rdf-schema#label> "crown diameter in meters"@en .
+<http://eventour.unimib.it/Tree> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/category/performing-arts-entertainment> <http://www.w3.org/2004/02/skos/core#prefLabel> "performing arts entertainment" .
+<http://eventour.unimib.it/hasPrimaryFamily> <http://www.w3.org/2000/01/rdf-schema#domain> <http://eventour.unimib.it/UrbanEntity> .
+<http://eventour.unimib.it/parkingSpaces> <http://www.w3.org/2000/01/rdf-schema#label> "parking spaces"@en .
+<http://eventour.unimib.it/Bench> <http://www.w3.org/2000/01/rdf-schema#label> "Bench"@en .
+<http://eventour.unimib.it/featureCount> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/urban-landmark> .
+<http://eventour.unimib.it/numberOfStops> <http://www.w3.org/2000/01/rdf-schema#label> "number of stops"@en .
+<http://eventour.unimib.it/availability> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/ParkingFacility> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/ServiceAccessPoint> .
+<http://eventour.unimib.it/genus> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/urbanBelt> <http://www.w3.org/2000/01/rdf-schema#label> "urban belt"@en .
+<http://eventour.unimib.it/ParkingFacility> <http://www.w3.org/2000/01/rdf-schema#label> "Parking facility"@en .
+<http://eventour.unimib.it/forRoutePattern> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/locationDescription> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/InterchangeParkingFacility> <http://www.w3.org/2000/01/rdf-schema#label> "Interchange parking facility"@en .
+<http://eventour.unimib.it/TimetableSummary> <http://www.w3.org/2000/01/rdf-schema#label> "Timetable summary"@en .
+<http://eventour.unimib.it/Service> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/inferredNILName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/lineOfRoute> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/DrinkingFountain> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/ServiceAccessPoint> .
+<http://eventour.unimib.it/category/special-interest-attraction> <http://www.w3.org/2004/02/skos/core#prefLabel> "special interest attraction" .
+<http://eventour.unimib.it/facilityType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/cemetery-funerary-heritage> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/scheme/charging-typology> <http://www.w3.org/2004/02/skos/core#prefLabel> "Charging typology values"@en .
+<http://eventour.unimib.it/Stop> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/ServiceAccessPoint> .
+<http://eventour.unimib.it/hasSecondaryFamily> <http://www.w3.org/2000/01/rdf-schema#domain> <http://eventour.unimib.it/UrbanEntity> .
+<http://eventour.unimib.it/role/secondary-poi> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourRoleScheme> .
+<http://eventour.unimib.it/UrbanEntity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/streetIdentifier> <http://www.w3.org/2000/01/rdf-schema#label> "street identifier"@en .
+<http://eventour.unimib.it/category/park-garden-nature> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/Infrastructure> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/scheme/commercial-category> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/commercial-category/ristorante> .
+<http://eventour.unimib.it/RoutePattern> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.opengis.net/ont/geosparql#Feature> .
+<http://eventour.unimib.it/capacityDescription> <http://www.w3.org/2000/01/rdf-schema#label> "capacity description"@en .
+<http://eventour.unimib.it/sourceNote> <http://www.w3.org/2000/01/rdf-schema#label> "source note"@en .
+<http://eventour.unimib.it/StreetFurniture> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/EVChargingStation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Infrastructure> .
+<http://eventour.unimib.it/stationNumber> <http://www.w3.org/2000/01/rdf-schema#label> "station number"@en .
+<http://eventour.unimib.it/scheme/placement-context> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/NILArea> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/scheme/route-direction> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/route-direction/descending> .
+<http://eventour.unimib.it/scheme/facility-type> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/facility-type/mobile> .
+<http://eventour.unimib.it/Street> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/eveningTrips> <http://www.w3.org/2000/01/rdf-schema#label> "evening trips"@en .
+<http://eventour.unimib.it/PicnicTable> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/category/science-education-attraction> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/Place> <http://www.w3.org/2000/01/rdf-schema#label> "Place"@en .
+<http://eventour.unimib.it/curation-label/secondary-poi> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/CurationLabelScheme> .
+<http://eventour.unimib.it/featureCount> <http://www.w3.org/2000/01/rdf-schema#label> "feature count"@en .
+<http://eventour.unimib.it/nilName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/hasPrimaryFamily> <http://www.w3.org/2000/01/rdf-schema#comment> "Links an entity to its broad Eventour family."@en .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/dataset-theme/commerce-heritage> .
+<http://eventour.unimib.it/scheme/parking-facility-category> <http://www.w3.org/2004/02/skos/core#prefLabel> "Parking facility category values"@en .
+<http://eventour.unimib.it/streetFurnitureType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/stallsPerStructure> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/installationYear> <http://www.w3.org/2000/01/rdf-schema#label> "installation year"@en .
+<http://eventour.unimib.it/servedByLine> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/science-education-attraction> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/category/museum-collection> <http://www.w3.org/2004/02/skos/core#prefLabel> "museum collection" .
+<http://eventour.unimib.it/RoutePattern> <http://www.w3.org/2000/01/rdf-schema#label> "Route pattern"@en .
+<http://eventour.unimib.it/scheme/rack-type> <http://www.w3.org/2004/02/skos/core#prefLabel> "Rack/manufatto type values"@en .
+<http://eventour.unimib.it/category/cemetery-funerary-heritage> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/inMunicipality> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/peakTrips> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/role/primary-poi> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourRoleScheme> .
+<http://eventour.unimib.it/EVChargingStation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/ServiceAccessPoint> .
+<http://eventour.unimib.it/availabilityDescription> <http://www.w3.org/2000/01/rdf-schema#label> "availability description"@en .
+<http://eventour.unimib.it/serviceCode> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/transportMode> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/validUntilDescription> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/ordinanceReference> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/curation-label/primary-poi> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/CurationLabelScheme> .
+<http://eventour.unimib.it/AdministrativeArea> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.opengis.net/ont/geosparql#Feature> .
+<http://eventour.unimib.it/scheme/parking-type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/scheme/status> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/status/vigente> .
+<http://eventour.unimib.it/hasSecondaryFamily> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<http://eventour.unimib.it/municipalityName> <http://www.w3.org/2000/01/rdf-schema#label> "municipality name"@en .
+<http://eventour.unimib.it/numberOfStops> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/hasSecondaryFamily> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/sourceProvidedLength> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/installationDate> <http://www.w3.org/2000/01/rdf-schema#label> "installation date"@en .
+<http://eventour.unimib.it/toiletType> <http://www.w3.org/2000/01/rdf-schema#label> "toilet type"@en .
+<http://eventour.unimib.it/partOfProject> <http://www.w3.org/2000/01/rdf-schema#label> "part of project"@en .
+<http://eventour.unimib.it/heightM> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/sourceIdentifierValue> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/religious-heritage> .
+<http://eventour.unimib.it/category/performing-arts-entertainment> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/startTime> <http://www.w3.org/2000/01/rdf-schema#label> "start time"@en .
+<http://eventour.unimib.it/stop> <http://www.w3.org/2000/01/rdf-schema#label> "stop"@en .
+<http://eventour.unimib.it/scheme/placement-context> <http://www.w3.org/2000/01/rdf-schema#label> "Placement context concept scheme"@en .
+<http://eventour.unimib.it/TransitLine> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/streetIdentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/hasPrimaryFamily> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<http://eventour.unimib.it/Facility> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/scheme/implementation-status> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/implementation-status/revamping> .
+<http://eventour.unimib.it/sourceClassificationCode> <http://www.w3.org/2000/01/rdf-schema#label> "source classification code"@en .
+<http://eventour.unimib.it/Tree> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/PhysicalAsset> .
+<http://eventour.unimib.it/hasPrimaryFamily> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/numberOfBikeStalls> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/role/primary-poi> <http://www.w3.org/2004/02/skos/core#prefLabel> "Primary POI"@en .
+<http://eventour.unimib.it/TransitLine> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/TransportEntity> .
+<http://eventour.unimib.it/scheme/status> <http://www.w3.org/2004/02/skos/core#prefLabel> "Status values"@en .
+<http://eventour.unimib.it/Project> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/EventourRoleScheme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/PublicToilet> <http://www.w3.org/2000/01/rdf-schema#label> "Public toilet"@en .
+<http://eventour.unimib.it/areaCode> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/urban-landmark> <http://www.w3.org/2004/02/skos/core#prefLabel> "urban landmark" .
+<http://eventour.unimib.it/PhysicalAsset> <http://www.w3.org/2000/01/rdf-schema#label> "Physical asset"@en .
+<http://eventour.unimib.it/sourceMultiValue> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/AdministrativeArea> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/role/context-entity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/dataset-theme/parking-energy> .
+<http://eventour.unimib.it/category/archaeological-ancient-site> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/establishedYear> <http://www.w3.org/2000/01/rdf-schema#label> "established year"@en .
+<http://eventour.unimib.it/inMunicipality> <http://www.w3.org/2000/01/rdf-schema#label> "in municipality"@en .
+<http://eventour.unimib.it/streetFurnitureType> <http://www.w3.org/2000/01/rdf-schema#label> "street furniture type"@en .
+<http://eventour.unimib.it/providesAccessTo> <http://www.w3.org/2000/01/rdf-schema#label> "provides access to service"@en .
+<http://eventour.unimib.it/scheme/charging-infrastructure> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/scheme/route-direction> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/route-direction/ascending> .
+<http://eventour.unimib.it/year> <http://www.w3.org/2000/01/rdf-schema#label> "year"@en .
+<http://eventour.unimib.it/EventourRoleScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/role/context-entity> .
+<http://eventour.unimib.it/hasCurationLabel> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<http://eventour.unimib.it/derivedValueNote> <http://www.w3.org/2000/01/rdf-schema#label> "derived value note"@en .
+<http://eventour.unimib.it/originalDownloadURLToBeAdded> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/validUntilDescription> <http://www.w3.org/2000/01/rdf-schema#label> "valid until description"@en .
+<http://eventour.unimib.it/year> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/StreetFurniture> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/PhysicalAsset> .
+<http://eventour.unimib.it/InterchangeParkingFacility> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/ParkingFacility> .
+<http://eventour.unimib.it/routeLengthKm> <http://www.w3.org/2000/01/rdf-schema#label> "route length in km"@en .
+<http://eventour.unimib.it/uriPatternNote> <http://www.w3.org/2000/01/rdf-schema#label> "URI pattern note"@en .
+<http://eventour.unimib.it/Infrastructure> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/PhysicalAsset> .
+<http://eventour.unimib.it/EventourOntology> <http://purl.org/dc/terms/description> "Ontology for the Eventour multi-layer urban knowledge graph, covering municipal urban infrastructure, mobility and service layers, and a role-based semantic place layer."@en .
+<http://eventour.unimib.it/hasCurationLabel> <http://www.w3.org/2000/01/rdf-schema#domain> <http://eventour.unimib.it/Place> .
+<http://eventour.unimib.it/StreetFurniture> <http://www.w3.org/2000/01/rdf-schema#label> "Street furniture"@en .
+<http://eventour.unimib.it/scheme/parking-type> <http://www.w3.org/2000/01/rdf-schema#label> "Parking type concept scheme"@en .
+<http://eventour.unimib.it/category/park-garden-nature> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/sourceResponsibleOrganizationRole> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/status> <http://www.w3.org/2000/01/rdf-schema#label> "Status concept scheme"@en .
+<http://eventour.unimib.it/derivedRelationNote> <http://www.w3.org/2000/01/rdf-schema#label> "derived relation note"@en .
+<http://eventour.unimib.it/eveningTrips> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/UrbanPlace> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanEntity> .
+<http://eventour.unimib.it/sourceIdentifierValue> <http://www.w3.org/2000/01/rdf-schema#label> "source identifier value"@en .
+<http://eventour.unimib.it/category/religious-heritage> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/CurationLabelScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/curation-label/primary-poi> .
+<http://eventour.unimib.it/NILArea> <http://www.w3.org/2000/01/rdf-schema#label> "Nucleo di Identità Locale area"@en .
+<http://eventour.unimib.it/locality> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/day-type> <http://www.w3.org/2004/02/skos/core#prefLabel> "Transit day type values"@en .
+<http://eventour.unimib.it/stationLayoutType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/serviceCode> <http://www.w3.org/2000/01/rdf-schema#label> "service code"@en .
+<http://eventour.unimib.it/sourceVehicleTypeText> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/startTime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/rack-type> <http://www.w3.org/2000/01/rdf-schema#label> "Rack/manufatto type concept scheme"@en .
+<http://eventour.unimib.it/forTransitLine> <http://www.w3.org/2000/01/rdf-schema#label> "for transit line"@en .
+<http://eventour.unimib.it/establishedYear> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/charging-typology> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/charging-typology/f> .
+<http://eventour.unimib.it/shapeLength> <http://www.w3.org/2000/01/rdf-schema#label> "shape length"@en .
+<http://eventour.unimib.it/status> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/inferredNILIdentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/science-education-attraction> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/museum-collection> .
+<http://eventour.unimib.it/parkingType> <http://www.w3.org/2000/01/rdf-schema#label> "parking type"@en .
+<http://eventour.unimib.it/EventourOntology> <http://www.w3.org/2000/01/rdf-schema#label> "Eventour ontology"@en .
+<http://eventour.unimib.it/category/cemetery-funerary-heritage> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/scheme/day-type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/implementationStatus> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/hasEventourRole> <http://www.w3.org/2000/01/rdf-schema#domain> <http://eventour.unimib.it/Place> .
+<http://eventour.unimib.it/Municipality> <http://www.w3.org/2000/01/rdf-schema#label> "Municipality"@en .
+<http://eventour.unimib.it/facilityType> <http://www.w3.org/2000/01/rdf-schema#label> "facility type"@en .
+<http://eventour.unimib.it/numberOfChargingColumns> <http://www.w3.org/2000/01/rdf-schema#label> "number of charging columns"@en .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/BikeSharingStation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/ServiceAccessPoint> .
+<http://eventour.unimib.it/category/gallery-art-space> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/HistoricShop> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Facility> .
+<http://eventour.unimib.it/scheme/urban-belt> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/urban-belt/extra-filoviaria> .
+<http://eventour.unimib.it/sourceProvidedArea> <http://www.w3.org/2000/01/rdf-schema#label> "source-provided area"@en .
+<http://eventour.unimib.it/TimetableSummary> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/TransportEntity> .
+<http://eventour.unimib.it/category/public-art> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/peakTrips> <http://www.w3.org/2000/01/rdf-schema#label> "peak trips"@en .
+<http://eventour.unimib.it/WiFiAccessPoint> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/placementContext> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/sourceProvidedLength> <http://www.w3.org/2000/01/rdf-schema#label> "source-provided length"@en .
+<http://eventour.unimib.it/installationYear> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/sourceClassificationCode> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/geometryAvailabilityNote> <http://www.w3.org/2000/01/rdf-schema#label> "geometry availability note"@en .
+<http://eventour.unimib.it/category/district-streetscape> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/Municipality> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/numberOfBikeStalls> <http://www.w3.org/2000/01/rdf-schema#label> "number of bike stalls"@en .
+<http://eventour.unimib.it/forRoutePattern> <http://www.w3.org/2000/01/rdf-schema#label> "for route pattern"@en .
+<http://eventour.unimib.it/crownDiameter> <http://www.w3.org/2000/01/rdf-schema#label> "crown diameter"@en .
+<http://eventour.unimib.it/hasEventourRole> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<http://eventour.unimib.it/StopInRoute> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/scheme/route-type> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/route-type/canonical> .
+<http://eventour.unimib.it/numberOfChargingPoints> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/inSubNIL> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/additionalInfo> <http://www.w3.org/2000/01/rdf-schema#label> "additional information"@en .
+<http://eventour.unimib.it/numberOfStructures> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/curation-label/context-entity> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/CurationLabelScheme> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#prefLabel> "Eventour category scheme"@en .
+<http://eventour.unimib.it/Facility> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/PhysicalAsset> .
+<http://eventour.unimib.it/scheme/transport-mode> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/transport-mode/tram> .
+<http://eventour.unimib.it/StopInRoute> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/TransportEntity> .
+<http://eventour.unimib.it/sourceMultiValue> <http://www.w3.org/2000/01/rdf-schema#label> "source multi-value field"@en .
+<http://eventour.unimib.it/scheme/charging-typology> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/responsibleOrganization> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/HistoricShop> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/BikeSharingStation> <http://www.w3.org/2000/01/rdf-schema#label> "Bike-sharing station"@en .
+<http://eventour.unimib.it/hasEventourCategory> <http://www.w3.org/2000/01/rdf-schema#domain> <http://eventour.unimib.it/Place> .
+<http://eventour.unimib.it/sequenceNumber> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/role/primary-poi> <http://www.w3.org/2004/02/skos/core#definition> "Culturally or historically salient urban place usable as a destination anchor."@en .
+<http://eventour.unimib.it/TimetableSummary> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/WiFiAccessPoint> <http://www.w3.org/2000/01/rdf-schema#label> "Wi-Fi access point"@en .
+<http://eventour.unimib.it/scheme/charging-infrastructure> <http://www.w3.org/2000/01/rdf-schema#label> "Charging infrastructure concept scheme"@en .
+<http://eventour.unimib.it/metadataCompletionNote> <http://www.w3.org/2000/01/rdf-schema#label> "metadata completion note"@en .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/dataset-theme/mobility> .
+<http://eventour.unimib.it/responsibleOrganization> <http://www.w3.org/2000/01/rdf-schema#label> "responsible organization"@en .
+<http://eventour.unimib.it/sourceLineCodes> <http://www.w3.org/2000/01/rdf-schema#label> "source line codes"@en .
+<http://eventour.unimib.it/scheme/facility-type> <http://www.w3.org/2004/02/skos/core#prefLabel> "Facility type values"@en .
+<http://eventour.unimib.it/urbanBelt> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/hasCurationLabel> <http://www.w3.org/2000/01/rdf-schema#label> "has curation label"@en .
+<http://eventour.unimib.it/hasStopInRoute> <http://www.w3.org/2000/01/rdf-schema#label> "has stop in route"@en .
+<http://eventour.unimib.it/UrbanEntity> <http://www.w3.org/2000/01/rdf-schema#label> "Urban entity"@en .
+<http://eventour.unimib.it/category/archaeological-ancient-site> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/inNIL> <http://www.w3.org/2000/01/rdf-schema#label> "in NIL area"@en .
+<http://eventour.unimib.it/hasEventourCategory> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<http://eventour.unimib.it/species> <http://www.w3.org/2000/01/rdf-schema#label> "species"@en .
+<http://eventour.unimib.it/commercialCategory> <http://www.w3.org/2000/01/rdf-schema#label> "commercial category"@en .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/dataset-theme/administrative-boundary> .
+<http://eventour.unimib.it/availability> <http://www.w3.org/2000/01/rdf-schema#label> "availability"@en .
+<http://eventour.unimib.it/category/public-art> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/PhysicalAsset> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanThing> .
+<http://eventour.unimib.it/category/historic-architecture> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/scheme/placement-context> <http://www.w3.org/2004/02/skos/core#prefLabel> "Placement context values"@en .
+<http://eventour.unimib.it/inferredNILIdentifier> <http://www.w3.org/2000/01/rdf-schema#label> "inferred NIL identifier"@en .
+<http://eventour.unimib.it/lineOfRoute> <http://www.w3.org/2000/01/rdf-schema#label> "line of route"@en .
+<http://eventour.unimib.it/Municipality> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/AdministrativeArea> .
+<http://eventour.unimib.it/CurationLabelScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/curation-label/secondary-poi> .
+<http://eventour.unimib.it/parkingAreaName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/commercialCategory> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/2000/01/rdf-schema#label> "Dataset theme concept scheme"@en .
+<http://eventour.unimib.it/category/gallery-art-space> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/geometryType> <http://www.w3.org/2000/01/rdf-schema#label> "geometry type"@en .
+<http://eventour.unimib.it/chargingTypology> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/UrbanEntity> <http://www.w3.org/2000/01/rdf-schema#comment> "Top-level class for entities represented in an Eventour city knowledge graph."@en .
+<http://eventour.unimib.it/infrastructureType> <http://www.w3.org/2000/01/rdf-schema#label> "infrastructure type"@en .
+<http://eventour.unimib.it/locality> <http://www.w3.org/2000/01/rdf-schema#label> "locality"@en .
+<http://eventour.unimib.it/ordinanceReference> <http://www.w3.org/2000/01/rdf-schema#label> "ordinance reference"@en .
+<http://eventour.unimib.it/nilInferenceMethod> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/crownDiameter> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/religious-heritage> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/DrinkingFountain> <http://www.w3.org/2000/01/rdf-schema#label> "Drinking fountain"@en .
+<http://eventour.unimib.it/permittedVehicleType> <http://www.w3.org/2000/01/rdf-schema#label> "permitted vehicle type"@en .
+<http://eventour.unimib.it/scheme/placement-context> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/placement-context/area-verde-giardino-parco> .
+<http://eventour.unimib.it/streetType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/special-interest-attraction> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/derivedRelationNote> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/curation-label/context-entity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/forTransitLine> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/hasEventourRole> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/numberOfChargingColumns> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/station-layout> <http://www.w3.org/2004/02/skos/core#prefLabel> "Station layout values"@en .
+<http://eventour.unimib.it/scheme/rack-type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/CurationLabelScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/curation-label/context-entity> .
+<http://eventour.unimib.it/offPeakTrips> <http://www.w3.org/2000/01/rdf-schema#label> "off-peak trips"@en .
+<http://eventour.unimib.it/scheme/station-layout> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/station-layout/monofacciale> .
+<http://eventour.unimib.it/sourceProvidedArea> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/PublicToilet> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/UrbanPlace> <http://www.w3.org/2000/01/rdf-schema#label> "Urban place"@en .
+<http://eventour.unimib.it/AdministrativeArea> <http://www.w3.org/2000/01/rdf-schema#label> "Administrative area"@en .
+<http://eventour.unimib.it/permittedVehicleType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/role/secondary-poi> <http://www.w3.org/2004/02/skos/core#definition> "Non-primary geolocated urban place candidate that can support operational tasks such as crowd redistribution, alternative routing, local discovery, or post-event staggering."@en .
+<http://eventour.unimib.it/MetroStation> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/curation-label/secondary-poi> <http://www.w3.org/2004/02/skos/core#prefLabel> "Secondary POI"@en .
+<http://eventour.unimib.it/routeDirection> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/hasEventourCategory> <http://www.w3.org/2000/01/rdf-schema#label> "has Eventour category"@en .
+<http://eventour.unimib.it/CurationLabelScheme> <http://www.w3.org/2004/02/skos/core#prefLabel> "Eventour curation label scheme"@en .
+<http://eventour.unimib.it/role/context-entity> <http://www.w3.org/2004/02/skos/core#definition> "Geolocated entity that provides semantic background for the urban knowledge graph but is not treated as a candidate destination or redistribution anchor."@en .
+<http://eventour.unimib.it/PublicToilet> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Facility> .
+<http://eventour.unimib.it/role/secondary-poi> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourRoleScheme> .
+<http://eventour.unimib.it/Bench> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/StreetFurniture> .
+<http://eventour.unimib.it/hasTimetableSummary> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/rackType> <http://www.w3.org/2000/01/rdf-schema#label> "rack type"@en .
+<http://eventour.unimib.it/ServicePattern> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/TransportEntity> .
+<http://eventour.unimib.it/ServiceAccessPoint> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanThing> .
+<http://eventour.unimib.it/hasGeometrySample> <http://www.w3.org/2000/01/rdf-schema#label> "has geometry sample"@en .
+<http://eventour.unimib.it/scheme/transport-mode> <http://www.w3.org/2000/01/rdf-schema#label> "Transport mode concept scheme"@en .
+<http://eventour.unimib.it/category/urban-landmark> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/hasGeometrySample> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/originalFileName> <http://www.w3.org/2000/01/rdf-schema#label> "original file name"@en .
+<http://eventour.unimib.it/hasEventourCategory> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/endTime> <http://www.w3.org/2000/01/rdf-schema#label> "end time"@en .
+<http://eventour.unimib.it/genus> <http://www.w3.org/2000/01/rdf-schema#label> "genus"@en .
+<http://eventour.unimib.it/category/monument-memorial> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/geometryType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/parkingAreaIdentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/crownDiameterM> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/cemetery-funerary-heritage> <http://www.w3.org/2004/02/skos/core#prefLabel> "cemetery funerary heritage" .
+<http://eventour.unimib.it/scheme/route-type> <http://www.w3.org/2000/01/rdf-schema#label> "Route type concept scheme"@en .
+<http://eventour.unimib.it/implementationStatus> <http://www.w3.org/2000/01/rdf-schema#label> "implementation status"@en .
+<http://eventour.unimib.it/category/public-art> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/scheme/vehicle-type> <http://www.w3.org/2000/01/rdf-schema#label> "Vehicle type concept scheme"@en .
+<http://eventour.unimib.it/scheme/charging-typology> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/charging-typology/n> .
+<http://eventour.unimib.it/TransportEntity> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanThing> .
+<http://eventour.unimib.it/sourceChargingTypologyCode> <http://www.w3.org/2000/01/rdf-schema#label> "source charging typology code"@en .
+<http://eventour.unimib.it/streetName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/trunkDiameter> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/sourceVehicleTypeText> <http://www.w3.org/2000/01/rdf-schema#label> "source vehicle type text"@en .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/monument-memorial> .
+<http://eventour.unimib.it/role/primary-poi> <http://www.w3.org/2004/02/skos/core#definition> "Culturally or historically salient urban place that can act as a destination anchor for itinerary generation, cultural promotion, and event-tourism applications."@en .
+<http://eventour.unimib.it/trunkDiameterCm> <http://www.w3.org/2000/01/rdf-schema#label> "trunk diameter in centimeters"@en .
+<http://eventour.unimib.it/ServicePattern> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/role/primary-poi> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/PicnicTable> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/StreetFurniture> .
+<http://eventour.unimib.it/UrbanPlace> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/curation-label/secondary-poi> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/PhysicalAsset> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/PublicToilet> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/ServiceAccessPoint> .
+<http://eventour.unimib.it/sourceNote> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/Tree> <http://www.w3.org/2000/01/rdf-schema#label> "Tree"@en .
+<http://eventour.unimib.it/curation-label/primary-poi> <http://www.w3.org/2004/02/skos/core#prefLabel> "Primary POI"@en .
+<http://eventour.unimib.it/Service> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanThing> .
+<http://eventour.unimib.it/validTo> <http://www.w3.org/2000/01/rdf-schema#label> "valid to"@en .
+<http://eventour.unimib.it/category/historic-architecture> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/variety> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/Facility> <http://www.w3.org/2000/01/rdf-schema#label> "Facility"@en .
+<http://eventour.unimib.it/derivedValueNote> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/special-interest-attraction> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/scheme/commercial-category> <http://www.w3.org/2004/02/skos/core#prefLabel> "Commercial category values"@en .
+<http://eventour.unimib.it/validTo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/UrbanThing> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanEntity> .
+<http://eventour.unimib.it/scheme/charging-infrastructure> <http://www.w3.org/2004/02/skos/core#prefLabel> "Charging infrastructure values"@en .
+<http://eventour.unimib.it/Project> <http://www.w3.org/2000/01/rdf-schema#label> "Project"@en .
+<http://eventour.unimib.it/role/context-entity> <http://www.w3.org/2004/02/skos/core#prefLabel> "Context Entity"@en .
+<http://eventour.unimib.it/facilityCategory> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/curation-label/primary-poi> <http://www.w3.org/2004/02/skos/core#inScheme> <http://eventour.unimib.it/CurationLabelScheme> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/special-interest-attraction> .
+<http://eventour.unimib.it/numberOfStructures> <http://www.w3.org/2000/01/rdf-schema#label> "number of structures"@en .
+<http://eventour.unimib.it/scheme/parking-facility-category> <http://www.w3.org/2000/01/rdf-schema#label> "Parking facility category concept scheme"@en .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/district-streetscape> .
+<http://eventour.unimib.it/InterchangeParkingFacility> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/vehicleType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/Service> <http://www.w3.org/2000/01/rdf-schema#label> "Service"@en .
+<http://eventour.unimib.it/category/park-garden-nature> <http://www.w3.org/2004/02/skos/core#prefLabel> "park garden nature" .
+<http://eventour.unimib.it/conversionRuleNote> <http://www.w3.org/2000/01/rdf-schema#label> "conversion rule note"@en .
+<http://eventour.unimib.it/BicycleParkingArea> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Facility> .
+<http://eventour.unimib.it/DrinkingFountain> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/stallsPerStructure> <http://www.w3.org/2000/01/rdf-schema#label> "stalls per structure"@en .
+<http://eventour.unimib.it/CurationLabelScheme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/ParkingFacility> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Facility> .
+<http://eventour.unimib.it/scheme/parking-facility-category> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/Place> <http://www.w3.org/2000/01/rdf-schema#comment> "Geolocated place entity in the Eventour semantic place layer."@en .
+<http://eventour.unimib.it/scheme/dataset-theme> <http://www.w3.org/2004/02/skos/core#prefLabel> "Dataset themes"@en .
+<http://eventour.unimib.it/locationDescription> <http://www.w3.org/2000/01/rdf-schema#label> "location description"@en .
+<http://eventour.unimib.it/WiFiAccessPoint> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Infrastructure> .
+<http://eventour.unimib.it/EventourRoleScheme> <http://www.w3.org/2004/02/skos/core#prefLabel> "Eventour role scheme"@en .
+<http://eventour.unimib.it/category/special-interest-attraction> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/locatedOnStreet> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/EventourRoleScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/role/secondary-poi> .
+<http://eventour.unimib.it/hasSecondaryFamily> <http://www.w3.org/2000/01/rdf-schema#comment> "Links an entity to an additional Eventour family when applicable."@en .
+<http://eventour.unimib.it/sourceLineCodes> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/day-type> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/day-type/working-day> .
+<http://eventour.unimib.it/hasCurationLabel> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://eventour.unimib.it/ServiceAccessPoint> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/sourceObjectId> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/availabilityDescription> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/route-type> <http://www.w3.org/2004/02/skos/core#prefLabel> "Route type values"@en .
+<http://eventour.unimib.it/category/performing-arts-entertainment> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/EventourCategoryScheme> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/category/science-education-attraction> .
+<http://eventour.unimib.it/UrbanThing> <http://www.w3.org/2000/01/rdf-schema#label> "Urban thing"@en .
+<http://eventour.unimib.it/curation-label/context-entity> <http://www.w3.org/2004/02/skos/core#prefLabel> "Context Entity"@en .
+<http://eventour.unimib.it/category/gallery-art-space> <http://www.w3.org/2004/02/skos/core#prefLabel> "gallery art space" .
+<http://eventour.unimib.it/capacityDescription> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/category/museum-collection> <http://www.w3.org/2004/02/skos/core#topConceptOf> <http://eventour.unimib.it/EventourCategoryScheme> .
+<http://eventour.unimib.it/Place> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/Stop> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/Facility> .
+<http://eventour.unimib.it/routeType> <http://www.w3.org/2000/01/rdf-schema#label> "route type"@en .
+<http://eventour.unimib.it/EventourOntology> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Ontology> .
+<http://eventour.unimib.it/category/archaeological-ancient-site> <http://www.w3.org/2004/02/skos/core#prefLabel> "archaeological ancient site" .
+<http://eventour.unimib.it/installationDate> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/species> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://eventour.unimib.it/scheme/route-type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+<http://eventour.unimib.it/Place> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://eventour.unimib.it/UrbanPlace> .
+<http://eventour.unimib.it/ParkingFacility> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://eventour.unimib.it/scheme/urban-belt> <http://www.w3.org/2004/02/skos/core#prefLabel> "Urban belt values"@en .
+<http://eventour.unimib.it/scheme/charging-typology> <http://www.w3.org/2004/02/skos/core#hasTopConcept> <http://eventour.unimib.it/charging-typology/q> .
