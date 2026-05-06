@@ -455,32 +455,36 @@ function FocusSelectedPoint({ point }: { point: [number, number] | null }) {
   return null;
 }
 
-function KeepMapSized({ watchKeys }: { watchKeys: string }) {
+function KeepMapSized() {
   const map = useMap();
 
   useEffect(() => {
-    const invalidate = () => {
-      map.invalidateSize({ animate: false });
+    let resizeRaf: number | null = null;
+    const invalidate = () => map.invalidateSize({ animate: false });
+
+    const scheduleInvalidate = () => {
+      if (resizeRaf !== null) {
+        window.cancelAnimationFrame(resizeRaf);
+      }
+      resizeRaf = window.requestAnimationFrame(() => {
+        invalidate();
+        resizeRaf = null;
+      });
     };
 
     const rafId = window.requestAnimationFrame(invalidate);
-    const timeoutId = window.setTimeout(invalidate, 120);
-    const handleResize = () => invalidate();
-    window.addEventListener("resize", handleResize);
-
-    let resizeObserver: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined") {
-      resizeObserver = new ResizeObserver(() => invalidate());
-      resizeObserver.observe(map.getContainer());
-    }
+    const timeoutId = window.setTimeout(invalidate, 140);
+    window.addEventListener("resize", scheduleInvalidate, { passive: true });
 
     return () => {
       window.cancelAnimationFrame(rafId);
       window.clearTimeout(timeoutId);
-      window.removeEventListener("resize", handleResize);
-      resizeObserver?.disconnect();
+      if (resizeRaf !== null) {
+        window.cancelAnimationFrame(resizeRaf);
+      }
+      window.removeEventListener("resize", scheduleInvalidate);
     };
-  }, [map, watchKeys]);
+  }, [map]);
 
   return null;
 }
@@ -631,7 +635,7 @@ function App() {
       className="relative h-screen overflow-hidden text-base-content transition-colors"
       style={appBackgroundStyle}
     >
-      <AnimatedGraphBackground theme={theme} />
+      {activeTab !== "map" ? <AnimatedGraphBackground theme={theme} /> : null}
 
       <header className="fixed inset-x-0 top-0 z-20 navbar h-[4.5rem] border-b border-base-300/80 bg-base-100/72 px-1 backdrop-blur-md md:px-2">
         <div className="relative flex w-full items-center">
@@ -963,10 +967,7 @@ function MapPage({ theme }: { theme: Theme }) {
     theme === "dark" ? "text-white/85" : "text-base-content/75";
   const markerRefs = useRef<Record<string, L.Marker | null>>({});
   const milanCenter: [number, number] = [45.4642, 9.19];
-  const sidebarGradient =
-    theme === "dark"
-      ? "bg-[linear-gradient(to_bottom,rgba(17,24,39,0.95),rgba(15,23,42,0.98))]"
-      : "bg-[linear-gradient(to_bottom,rgba(255,255,255,0.94),rgba(248,250,252,0.98))]";
+  const sidebarSurface = theme === "dark" ? "bg-slate-900" : "bg-slate-50";
 
   const selectedMarkerIcon = useMemo(
     () =>
@@ -1368,11 +1369,14 @@ function MapPage({ theme }: { theme: Theme }) {
   };
 
   return (
-    <section className="grid h-[calc(100vh-4.5rem)] min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden md:grid-cols-[360px_minmax(0,1fr)] md:grid-rows-1">
+    <section className="grid h-[calc(100vh-4.5rem)] min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden md:grid-cols-[400px_minmax(0,1fr)] md:grid-rows-1">
       <aside
-        className={`min-h-0 border-b border-base-300/80 backdrop-blur md:border-b-0 md:border-r ${sidebarGradient}`}
+        className={`min-h-0 border-b border-base-300/80 md:border-b-0 md:border-r ${sidebarSurface}`}
       >
-        <div ref={sidebarRef} className="h-full overflow-y-auto p-4 md:p-5">
+        <div
+          ref={sidebarRef}
+          className="h-full overflow-y-auto overscroll-contain p-4 md:p-5"
+        >
         <h2
           className={`text-xl font-semibold ${theme === "dark" ? "text-white" : "text-slate-900"}`}
         >
@@ -1730,7 +1734,7 @@ function MapPage({ theme }: { theme: Theme }) {
         </div>
       </aside>
 
-      <section className="relative min-h-0 h-full">
+      <section className="relative h-full min-h-0 isolate">
         <MapContainer
           key={theme}
           center={milanCenter}
@@ -1762,9 +1766,7 @@ function MapPage({ theme }: { theme: Theme }) {
           ) : null}
           <FocusSelectedRoute coordinates={displayedRouteCoordinates} />
           <FocusSelectedPoint point={selectedPointCoordinates} />
-          <KeepMapSized
-            watchKeys={`${theme}|${itineraries.length}|${selectedItineraryPath ?? ""}|${displayedRouteCoordinates.length}|${isRoadRouteLoading ? 1 : 0}`}
-          />
+          <KeepMapSized />
           {(selectedItinerary?.punti || []).map((point, index, points) => {
             if (
               typeof point.latitude !== "number" ||

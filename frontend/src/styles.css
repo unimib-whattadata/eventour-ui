@@ -63,3 +63,8 @@ body,
 .map-dark-theme .eventour-popup .leaflet-popup-close-button:hover {
   color: #e2e8f0 !important;
 }
+
+/* Keep Leaflet tiles in a stable compositing layer on WebKit-based engines. */
+.leaflet-container img.leaflet-tile {
+  mix-blend-mode: normal;
+}
