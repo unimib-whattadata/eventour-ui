@@ -114,6 +114,60 @@ const getApiBaseCandidates = (): string[] => {
   ) as string[];
 };
 
+const getRoutingApiBaseCandidates = (): string[] => {
+  const configured = (
+    import.meta.env.VITE_ROUTING_API_BASE_URL as string | undefined
+  )?.trim();
+
+  return Array.from(
+    new Set(
+      [configured, "https://router.project-osrm.org"]
+        .filter((candidate): candidate is string => Boolean(candidate))
+        .map((candidate) => candidate.replace(/\/+$/, "")),
+    ),
+  );
+};
+
+const extractRoadRouteCoordinates = (payload: unknown): [number, number][] => {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const routes = (payload as { routes?: unknown }).routes;
+  if (!Array.isArray(routes) || routes.length === 0) {
+    return [];
+  }
+
+  const firstRoute = routes[0];
+  if (!firstRoute || typeof firstRoute !== "object") {
+    return [];
+  }
+
+  const geometry = (firstRoute as { geometry?: unknown }).geometry;
+  if (!geometry || typeof geometry !== "object") {
+    return [];
+  }
+
+  const coordinates = (geometry as { coordinates?: unknown }).coordinates;
+  if (!Array.isArray(coordinates)) {
+    return [];
+  }
+
+  const routeCoordinates: [number, number][] = [];
+  for (const pair of coordinates) {
+    if (!Array.isArray(pair) || pair.length < 2) {
+      continue;
+    }
+    const longitude = pair[0];
+    const latitude = pair[1];
+    if (typeof latitude === "number" && typeof longitude === "number") {
+      routeCoordinates.push([latitude, longitude]);
+    }
+  }
+
+  return routeCoordinates;
+};
+
 const tabs: Array<{ id: Tab; label: string }> = [
   { id: "home", label: "Home" },
   { id: "map", label: "Map" },
@@ -661,6 +715,10 @@ function MapPage({ theme }: { theme: Theme }) {
     route: string;
     index: number;
   } | null>(null);
+  const [roadRouteCoordinates, setRoadRouteCoordinates] = useState<
+    [number, number][]
+  >([]);
+  const [isRoadRouteLoading, setIsRoadRouteLoading] = useState(false);
   const mapCardTitleText = theme === "dark" ? "text-white" : "";
   const mapCardSubtitleText =
     theme === "dark" ? "text-white/85" : "text-base-content/75";
@@ -770,6 +828,14 @@ function MapPage({ theme }: { theme: Theme }) {
     [selectedItinerary],
   );
 
+  const displayedRouteCoordinates = useMemo<[number, number][]>(
+    () =>
+      roadRouteCoordinates.length > 1
+        ? roadRouteCoordinates
+        : selectedRouteCoordinates,
+    [roadRouteCoordinates, selectedRouteCoordinates],
+  );
+
   const selectedPoint = useMemo(() => {
     if (!selectedRoutePoint) {
       return null;
@@ -793,6 +859,86 @@ function MapPage({ theme }: { theme: Theme }) {
     }
     return null;
   }, [selectedPoint]);
+
+  useEffect(() => {
+    if (selectedRouteCoordinates.length < 2) {
+      setRoadRouteCoordinates(selectedRouteCoordinates);
+      setIsRoadRouteLoading(false);
+      return;
+    }
+
+    let isActive = true;
+    const controller = new AbortController();
+    const routingApiCandidates = getRoutingApiBaseCandidates();
+    const routeQuery = "overview=full&geometries=geojson&steps=false";
+
+    const fetchRoadRoute = async () => {
+      setIsRoadRouteLoading(true);
+      const resolvedCoordinates: [number, number][] = [];
+
+      for (
+        let pointIndex = 0;
+        pointIndex < selectedRouteCoordinates.length - 1;
+        pointIndex += 1
+      ) {
+        const from = selectedRouteCoordinates[pointIndex];
+        const to = selectedRouteCoordinates[pointIndex + 1];
+        let segmentCoordinates: [number, number][] | null = null;
+
+        for (const baseUrl of routingApiCandidates) {
+          const routeUrl = `${baseUrl}/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?${routeQuery}`;
+          try {
+            const response = await fetch(routeUrl, { signal: controller.signal });
+            if (!response.ok) {
+              continue;
+            }
+
+            const payload = (await response.json()) as unknown;
+            const roadCoordinates = extractRoadRouteCoordinates(payload);
+            if (roadCoordinates.length > 1) {
+              segmentCoordinates = roadCoordinates;
+              break;
+            }
+          } catch {
+            if (controller.signal.aborted) {
+              return;
+            }
+          }
+        }
+
+        const fallbackSegment = segmentCoordinates ?? [from, to];
+        if (resolvedCoordinates.length === 0) {
+          resolvedCoordinates.push(...fallbackSegment);
+        } else {
+          resolvedCoordinates.push(...fallbackSegment.slice(1));
+        }
+      }
+
+      if (!isActive) {
+        return;
+      }
+
+      setRoadRouteCoordinates(
+        resolvedCoordinates.length > 1
+          ? resolvedCoordinates
+          : selectedRouteCoordinates,
+      );
+      setIsRoadRouteLoading(false);
+    };
+
+    fetchRoadRoute().catch(() => {
+      if (!isActive || controller.signal.aborted) {
+        return;
+      }
+      setRoadRouteCoordinates(selectedRouteCoordinates);
+      setIsRoadRouteLoading(false);
+    });
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [selectedRouteCoordinates]);
 
   useEffect(() => {
     if (!selectedRoutePoint) {
@@ -1324,7 +1470,7 @@ function MapPage({ theme }: { theme: Theme }) {
         ) : null}
       </aside>
 
-      <section className="h-full">
+      <section className="relative h-full">
         <MapContainer
           key={theme}
           center={milanCenter}
@@ -1344,9 +1490,9 @@ function MapPage({ theme }: { theme: Theme }) {
               className="map-dark-labels"
             />
           ) : null}
-          {selectedRouteCoordinates.length > 1 ? (
+          {displayedRouteCoordinates.length > 1 ? (
             <Polyline
-              positions={selectedRouteCoordinates}
+              positions={displayedRouteCoordinates}
               pathOptions={{
                 color: "var(--color-primary)",
                 weight: 5,
@@ -1354,7 +1500,7 @@ function MapPage({ theme }: { theme: Theme }) {
               }}
             />
           ) : null}
-          <FocusSelectedRoute coordinates={selectedRouteCoordinates} />
+          <FocusSelectedRoute coordinates={displayedRouteCoordinates} />
           <FocusSelectedPoint point={selectedPointCoordinates} />
           {(selectedItinerary?.punti || []).map((point, index, points) => {
             if (
@@ -1435,6 +1581,11 @@ function MapPage({ theme }: { theme: Theme }) {
             );
           })}
         </MapContainer>
+        {isRoadRouteLoading ? (
+          <div className="pointer-events-none absolute right-3 top-3 z-[500] rounded-md border border-base-300 bg-base-100/90 px-3 py-1.5 text-xs font-medium text-base-content shadow-sm backdrop-blur">
+            Adapting route to real roads...
+          </div>
+        ) : null}
       </section>
     </section>
   );
