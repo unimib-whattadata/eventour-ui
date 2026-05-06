@@ -39,6 +39,57 @@ DISTANCE_FIELDNAMES = [
     "Distance (m)",
     "Duration (s)",
 ]
+MILAN_COORDINATES = {"latitude": 45.4642, "longitude": 9.19}
+OUTDOOR_TYPES_WHEN_RAIN = {"scultura", "monumento"}
+FOUNTAIN_TYPE_HINTS = {"drinkingfountain", "fontanella", "fontana"}
+WEATHER_CODE_LABELS = {
+    0: "Clear sky",
+    1: "Mainly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Depositing rime fog",
+    51: "Light drizzle",
+    53: "Moderate drizzle",
+    55: "Dense drizzle",
+    56: "Light freezing drizzle",
+    57: "Dense freezing drizzle",
+    61: "Slight rain",
+    63: "Moderate rain",
+    65: "Heavy rain",
+    66: "Light freezing rain",
+    67: "Heavy freezing rain",
+    71: "Slight snow fall",
+    73: "Moderate snow fall",
+    75: "Heavy snow fall",
+    77: "Snow grains",
+    80: "Slight rain showers",
+    81: "Moderate rain showers",
+    82: "Violent rain showers",
+    85: "Slight snow showers",
+    86: "Heavy snow showers",
+    95: "Thunderstorm",
+    96: "Thunderstorm with slight hail",
+    99: "Thunderstorm with heavy hail",
+}
+RAINY_WEATHER_CODES = {
+    51,
+    53,
+    55,
+    56,
+    57,
+    61,
+    63,
+    65,
+    66,
+    67,
+    80,
+    81,
+    82,
+    95,
+    96,
+    99,
+}
 
 
 class CercaItinerariPayload(BaseModel):
@@ -103,9 +154,103 @@ def _safe_float(value: str | None) -> float | None:
         return None
 
 
+def _safe_float_any(value: Any) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    return _safe_float(str(value))
+
+
+def _safe_int_any(value: Any) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    raw = str(value).strip()
+    if not raw:
+        return None
+    try:
+        return int(float(raw))
+    except (TypeError, ValueError):
+        return None
+
+
 def _normalize_type(value: str | None) -> str:
     raw = value or ""
     return re.sub(r"[^a-z0-9]+", "", raw.casefold())
+
+
+def _weather_code_to_label(weather_code: int | None) -> str:
+    if weather_code is None:
+        return "Unknown"
+    return WEATHER_CODE_LABELS.get(weather_code, f"WMO code {weather_code}")
+
+
+def _fetch_milan_weather_context() -> dict[str, Any]:
+    request_params = {
+        "latitude": MILAN_COORDINATES["latitude"],
+        "longitude": MILAN_COORDINATES["longitude"],
+        "current": "temperature_2m,weather_code,wind_speed_10m,precipitation",
+        "daily": "temperature_2m_max",
+        "forecast_days": 1,
+        "timezone": "Europe/Rome",
+    }
+    url = f"https://api.open-meteo.com/v1/forecast?{parse.urlencode(request_params)}"
+
+    req = request.Request(
+        url=url,
+        method="GET",
+        headers={"Accept": "application/json"},
+    )
+    with request.urlopen(req, timeout=20) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+
+    current = payload.get("current", {})
+    daily = payload.get("daily", {})
+    daily_max_values = daily.get(
+        "temperature_2m_max") if isinstance(daily, dict) else []
+
+    temperature_c = _safe_float_any(current.get("temperature_2m"))
+    weather_code = _safe_int_any(current.get("weather_code"))
+    wind_speed_kmh = _safe_float_any(current.get("wind_speed_10m"))
+    precipitation_mm = _safe_float_any(current.get("precipitation"))
+    daily_max_temperature_c = None
+    if isinstance(daily_max_values, list) and daily_max_values:
+        daily_max_temperature_c = _safe_float_any(daily_max_values[0])
+
+    hot_threshold = _safe_float_any(
+        os.getenv("HOT_WEATHER_THRESHOLD_C")) or 30.0
+    windy_threshold = _safe_float_any(
+        os.getenv("WINDY_WEATHER_THRESHOLD_KMH")) or 30.0
+    is_rainy = (weather_code in RAINY_WEATHER_CODES) or (
+        precipitation_mm is not None and precipitation_mm > 0
+    )
+    is_hot = (
+        (daily_max_temperature_c is not None and daily_max_temperature_c >= hot_threshold)
+        or (temperature_c is not None and temperature_c >= hot_threshold)
+    )
+    is_windy = wind_speed_kmh is not None and wind_speed_kmh >= windy_threshold
+
+    return {
+        "available": True,
+        "city": "Milan",
+        "api_url": url,
+        "time": current.get("time"),
+        "temperature_c": temperature_c,
+        "daily_max_temperature_c": daily_max_temperature_c,
+        "weather_code": weather_code,
+        "condition_label": _weather_code_to_label(weather_code),
+        "wind_speed_kmh": wind_speed_kmh,
+        "precipitation_mm": precipitation_mm,
+        "is_rainy": is_rainy,
+        "is_hot": is_hot,
+        "is_windy": is_windy,
+    }
 
 
 def _load_pois() -> list[dict[str, Any]]:
@@ -156,7 +301,8 @@ def _filter_distance_rows(
     start_node: str,
     end_node: str,
 ) -> list[dict[str, str]]:
-    filters = {_normalize_type(item) for item in selected_filters if item.strip()}
+    filters = {_normalize_type(item)
+               for item in selected_filters if item.strip()}
     if not filters:
         return rows
 
@@ -335,7 +481,11 @@ def _call_graphdb_sparql(query: str, timeout_seconds: int) -> dict[str, Any]:
         ) from exc
 
 
-def _build_gemini_prompt(payload: CercaItinerariPayload, filtered_rows: list[dict[str, str]]) -> str:
+def _build_gemini_prompt(
+    payload: CercaItinerariPayload,
+    filtered_rows: list[dict[str, str]],
+    weather_context: dict[str, Any],
+) -> str:
     max_total_stops = payload.max_stop_intermedi + 2
     duration_seconds = payload.tempo_massimo_minuti * 60
     duration_rule = (
@@ -343,6 +493,82 @@ def _build_gemini_prompt(payload: CercaItinerariPayload, filtered_rows: list[dic
         if payload.tempo_massimo_minuti > 0
         else "Non c'e limite di durata totale."
     )
+    selected_filters_normalized = {
+        _normalize_type(filter_name) for filter_name in payload.filtri if filter_name.strip()
+    }
+    outdoor_filtered_by_form = all(
+        weather_type in selected_filters_normalized
+        for weather_type in OUTDOOR_TYPES_WHEN_RAIN
+    )
+
+    available_types: set[str] = set()
+    for row in filtered_rows:
+        from_type = row.get("From_Type") or ""
+        to_type = row.get("To_Type") or ""
+        if from_type:
+            available_types.add(from_type.strip())
+        if to_type:
+            available_types.add(to_type.strip())
+    available_types_normalized = {
+        _normalize_type(value) for value in available_types}
+    has_fountain_candidates = any(
+        hint in available_types_normalized for hint in FOUNTAIN_TYPE_HINTS
+    )
+
+    if weather_context.get("available"):
+        temperature = weather_context.get("temperature_c")
+        temperature_text = (
+            f"{temperature:.1f}°C" if isinstance(
+                temperature, (float, int)) else "n/d"
+        )
+        daily_max = weather_context.get("daily_max_temperature_c")
+        daily_max_text = (
+            f"{daily_max:.1f}°C" if isinstance(
+                daily_max, (float, int)) else "n/d"
+        )
+        wind_speed = weather_context.get("wind_speed_kmh")
+        wind_text = f"{wind_speed:.1f} km/h" if isinstance(
+            wind_speed, (float, int)) else "n/d"
+        meteo_summary = (
+            f"Meteo oggi a Milano: condizione={weather_context.get('condition_label', 'Unknown')}, "
+            f"temperatura={temperature_text}, max_giornaliera={daily_max_text}, vento={wind_text}, "
+            f"pioggia={'si' if weather_context.get('is_rainy') else 'no'}."
+        )
+
+        meteo_rules: list[str] = []
+        if weather_context.get("is_rainy") and not outdoor_filtered_by_form:
+            meteo_rules.append(
+                "Se piove, evita quando possibile nodi con TYPE Scultura e Monumento "
+                "(salvo partenza/arrivo obbligati)."
+            )
+        if weather_context.get("is_hot"):
+            if has_fountain_candidates:
+                meteo_rules.append(
+                    "Se la temperatura e alta, prediligi percorsi che passano vicino a "
+                    "fontanelle (TYPE DrinkingFountain o equivalenti)."
+                )
+            else:
+                meteo_rules.append(
+                    "Se la temperatura e alta, privilegia soste in luoghi ombreggiati o "
+                    "riparati quando possibile."
+                )
+        if weather_context.get("is_windy"):
+            meteo_rules.append(
+                "Con vento sostenuto, preferisci tratte piu confortevoli evitando soste "
+                "all'aperto prolungate quando possibile."
+            )
+        if not meteo_rules:
+            meteo_rules.append(
+                "Meteo stabile: usa il meteo per affinare il comfort del percorso senza "
+                "alterare i vincoli principali."
+            )
+        meteo_guidance = "\n".join(f"- {rule}" for rule in meteo_rules)
+    else:
+        meteo_summary = "Meteo oggi a Milano: non disponibile."
+        meteo_guidance = (
+            "- Meteo non disponibile: ignora regole meteo specifiche ma fornisci comunque "
+            "una breve motivazione per ogni percorso."
+        )
 
     table_text = _rows_to_csv_text(filtered_rows)
     return f"""
@@ -356,6 +582,7 @@ Input:
 - max_nodi_totali_compresi_partenza_arrivo: {max_total_stops}
 - tempo_massimo_minuti: {payload.tempo_massimo_minuti}
 - filtri_attivi: {payload.filtri}
+- meteo_oggi: {meteo_summary}
 
 Regole obbligatorie:
 1. Ogni percorso deve partire da nodo_partenza e arrivare a nodo_arrivo.
@@ -367,10 +594,16 @@ Regole obbligatorie:
 7. Non troncare mai gli ID dei nodi: ogni ID deve essere completo.
 8. Non limitarti a percorsi con pochi stop: quando i vincoli lo permettono, includi almeno un percorso con molti stop intermedi (vicino al massimo consentito).
 9. Includi itinerari con stop intermedi variabili, non solo percorsi diretti o con 1 stop.
+10. Considera il meteo di oggi e applica queste preferenze:
+{meteo_guidance}
+11. Dopo ogni percorso fornisci una mini descrizione (2-3 righe) che spieghi le scelte fatte, inclusa l'influenza del meteo quando rilevante.
 
 Formato output obbligatorio (nessun testo extra):
 <id-nodo> - <id-nodo> - <id-nodo>
-<id-nodo> - <id-nodo>
+description: "testo breve"
+<separator>
+<id-nodo> - <id-nodo> - <id-nodo>
+description: "testo breve"
 
 Tabella CSV filtrata:
 {table_text}
@@ -476,31 +709,87 @@ def _call_gemini(prompt: str) -> str:
     return "\n".join(text_parts).strip()
 
 
-def _extract_paths(llm_response: str, max_paths: int = 3) -> list[list[str]]:
-    routes: list[list[str]] = []
+def _clean_description_value(value: str) -> str:
+    cleaned = value.strip()
+    if len(cleaned) >= 2 and (
+        (cleaned[0] == '"' and cleaned[-1] == '"')
+        or (cleaned[0] == "'" and cleaned[-1] == "'")
+    ):
+        cleaned = cleaned[1:-1].strip()
+    return cleaned
+
+
+def _extract_paths_with_descriptions(
+    llm_response: str,
+    max_paths: int = 3,
+) -> list[dict[str, Any]]:
+    route_entries: list[dict[str, Any]] = []
     seen_routes: set[tuple[str, ...]] = set()
+    current_entry: dict[str, Any] | None = None
+    route_pattern = re.compile(r"^\d+(?:\s*-\s*\d+)+$")
+
     for raw_line in llm_response.splitlines():
         line = raw_line.strip()
         if not line:
             continue
-        # Strip only bullets/enumeration markers without removing the first POI id.
-        line = re.sub(r"^[\-\*\u2022\s]+", "", line)
-        line = re.sub(r"^\d+\s*[\)\.]\s*", "", line)
-        if "-" not in line:
+        normalized = re.sub(r"^[\-\*\u2022\s]+", "", line)
+        normalized = re.sub(r"^\d+\s*[\)\.]\s*", "", normalized).strip()
+        if not normalized:
             continue
-        nodes = [node.strip() for node in line.split("-") if node.strip()]
-        if len(nodes) < 2:
+
+        if normalized.lower() in {"<separator>", "separator", "---", "***"}:
+            current_entry = None
             continue
-        if not all(re.fullmatch(r"\d+", node) for node in nodes):
+
+        if route_pattern.fullmatch(normalized):
+            nodes = [node.strip()
+                     for node in normalized.split("-") if node.strip()]
+            if len(nodes) < 2:
+                current_entry = None
+                continue
+
+            node_tuple = tuple(nodes)
+            if node_tuple in seen_routes:
+                current_entry = None
+                continue
+
+            if len(route_entries) >= max_paths:
+                current_entry = None
+                continue
+
+            current_entry = {"nodes": nodes,
+                             "description": "", "_description_started": False}
+            route_entries.append(current_entry)
+            seen_routes.add(node_tuple)
             continue
-        node_tuple = tuple(nodes)
-        if node_tuple in seen_routes:
+
+        description_match = re.match(
+            r"(?i)^description\s*:\s*(.*)$",
+            normalized,
+        )
+        if description_match:
+            description = _clean_description_value(description_match.group(1))
+            if current_entry is not None:
+                current_entry["description"] = description
+                current_entry["_description_started"] = True
+            elif route_entries and not route_entries[-1].get("description"):
+                route_entries[-1]["description"] = description
+                route_entries[-1]["_description_started"] = True
             continue
-        routes.append(nodes)
-        seen_routes.add(node_tuple)
-        if len(routes) >= max_paths:
-            break
-    return routes
+
+        if current_entry is not None and current_entry.get("_description_started"):
+            continuation = _clean_description_value(normalized)
+            if continuation:
+                previous = str(current_entry.get("description", "")).strip()
+                current_entry["description"] = (
+                    f"{previous}\n{continuation}" if previous else continuation
+                )
+            continue
+
+    for entry in route_entries:
+        entry.pop("_description_started", None)
+
+    return route_entries
 
 
 def _build_edge_lookup(rows: list[dict[str, str]]) -> dict[tuple[str, str], float]:
@@ -656,7 +945,8 @@ def _augment_paths_with_long_candidate(
                     continue
 
                 if best_insertion is None or delta < best_insertion[0]:
-                    best_insertion = (delta, index + 1, candidate_node, next_total)
+                    best_insertion = (delta, index + 1,
+                                      candidate_node, next_total)
 
         if best_insertion is None:
             break
@@ -676,6 +966,95 @@ def _augment_paths_with_long_candidate(
     return [path, *candidate_paths][:3]
 
 
+def _build_route_description(
+    nodes: list[str],
+    points: list[dict[str, Any]],
+    weather_context: dict[str, Any],
+) -> str:
+    return _enrich_route_description(
+        nodes=nodes,
+        points=points,
+        weather_context=weather_context,
+    )
+
+
+def _build_weather_description_line(weather_context: dict[str, Any]) -> str:
+    if not weather_context.get("available"):
+        return "Milan weather today: unavailable at route-calculation time."
+
+    condition_label = str(weather_context.get(
+        "condition_label") or "variable conditions").lower()
+    temperature = weather_context.get("temperature_c")
+    temperature_text = (
+        f"{temperature:.1f}°C" if isinstance(
+            temperature, (float, int)) else "n/a"
+    )
+
+    if weather_context.get("is_rainy"):
+        decision = "rain detected, so sheltered stops were prioritized."
+    elif weather_context.get("is_hot"):
+        decision = "high temperature, so stops near fountains were preferred."
+    elif weather_context.get("is_windy"):
+        decision = "strong wind, so prolonged outdoor stops were limited."
+    else:
+        decision = "stable conditions, but weather comfort was still considered."
+
+    return f"Milan weather today: {condition_label}, {temperature_text}; {decision}"
+
+
+def _build_poi_description_line(points: list[dict[str, Any]]) -> str:
+    # Highlight intermediate stops first because they drive itinerary interest.
+    poi_candidates = points[1:-1] if len(points) > 2 else points
+    selected_pois = poi_candidates[:3]
+    formatted: list[str] = []
+
+    for poi in selected_pois:
+        label = str(poi.get("label") or poi.get("poi_id") or "").strip()
+        poi_type = str(poi.get("type") or "").strip()
+        if not label:
+            continue
+        if poi_type:
+            formatted.append(f"{label} ({poi_type})")
+        else:
+            formatted.append(label)
+
+    if not formatted:
+        return "Selected POIs: direct route focused on travel-time efficiency."
+
+    return f"Selected POIs: {', '.join(formatted)}."
+
+
+def _build_route_summary_line(nodes: list[str]) -> str:
+    intermediate_stops = max(0, len(nodes) - 2)
+    if intermediate_stops == 0:
+        return (
+            "This route is direct between the selected start and destination, "
+            "optimized for travel-time efficiency."
+        )
+    if intermediate_stops == 1:
+        return (
+            "This route includes 1 intermediate stop and balances travel-time "
+            "efficiency with point-of-interest value."
+        )
+    return (
+        f"This route includes {intermediate_stops} intermediate stops and balances "
+        "travel-time efficiency with point-of-interest value."
+    )
+
+
+def _enrich_route_description(
+    nodes: list[str],
+    points: list[dict[str, Any]],
+    weather_context: dict[str, Any],
+) -> str:
+    lines = [
+        _build_route_summary_line(nodes),
+        _build_weather_description_line(weather_context),
+        _build_poi_description_line(points),
+    ]
+    return "\n".join(lines).strip()
+
+
 def _build_itineraries(
     candidate_paths: list[list[str]],
     start_node: str,
@@ -684,6 +1063,8 @@ def _build_itineraries(
     poi_index: dict[str, dict[str, Any]],
     max_stop_intermedi: int,
     tempo_massimo_minuti: int,
+    route_descriptions: dict[tuple[str, ...], str],
+    weather_context: dict[str, Any],
 ) -> list[dict[str, Any]]:
     edge_lookup = _build_edge_lookup(filtered_rows)
     itineraries: list[dict[str, Any]] = []
@@ -731,6 +1112,21 @@ def _build_itineraries(
         if not valid_path:
             continue
 
+        route_key = tuple(nodes)
+        description = route_descriptions.get(route_key, "").strip()
+        if not description:
+            description = _build_route_description(
+                nodes=nodes,
+                points=points,
+                weather_context=weather_context,
+            )
+        else:
+            description = _enrich_route_description(
+                nodes=nodes,
+                points=points,
+                weather_context=weather_context,
+            )
+
         itineraries.append(
             {
                 "percorso": " - ".join(nodes),
@@ -739,6 +1135,7 @@ def _build_itineraries(
                 "tempo_totale_minuti": round(total_duration_seconds / 60.0, 1),
                 "stop_intermedi_totali": max(0, len(nodes) - 2),
                 "punti_totali": len(nodes),
+                "description": description,
                 "punti": points,
             }
         )
@@ -772,7 +1169,8 @@ def get_pois() -> dict[str, Any]:
 def sparql_query(payload: SparqlQueryPayload) -> dict[str, Any]:
     query = payload.query.strip()
     if not query:
-        raise HTTPException(status_code=400, detail="The SPARQL query cannot be empty.")
+        raise HTTPException(
+            status_code=400, detail="The SPARQL query cannot be empty.")
     normalized_query = _normalize_sparql_query(query)
 
     graphdb_payload = _call_graphdb_sparql(
@@ -852,12 +1250,32 @@ def cerca_itinerari(payload: CercaItinerariPayload) -> dict[str, Any]:
             detail="The filtered table is empty. Try reducing filters.",
         )
 
-    prompt = _build_gemini_prompt(payload=payload, filtered_rows=filtered_rows)
+    weather_context: dict[str, Any] = {"available": False}
+    try:
+        weather_context = _fetch_milan_weather_context()
+    except Exception as exc:
+        print(f"Open-Meteo fetch failed: {exc}", flush=True)
+
+    prompt = _build_gemini_prompt(
+        payload=payload,
+        filtered_rows=filtered_rows,
+        weather_context=weather_context,
+    )
     fallback_used = False
+    route_descriptions: dict[tuple[str, ...], str] = {}
 
     try:
         llm_response = _call_gemini(prompt)
-        raw_paths = _extract_paths(llm_response, max_paths=3)
+        extracted_routes = _extract_paths_with_descriptions(
+            llm_response,
+            max_paths=3,
+        )
+        raw_paths = [route["nodes"] for route in extracted_routes]
+        route_descriptions = {
+            tuple(route["nodes"]): route.get("description", "")
+            for route in extracted_routes
+            if route.get("description")
+        }
     except HTTPException as exc:
         if exc.status_code not in (502, 503):
             raise
@@ -895,6 +1313,8 @@ def cerca_itinerari(payload: CercaItinerariPayload) -> dict[str, Any]:
         poi_index=poi_index,
         max_stop_intermedi=payload.max_stop_intermedi,
         tempo_massimo_minuti=payload.tempo_massimo_minuti,
+        route_descriptions=route_descriptions,
+        weather_context=weather_context,
     )
     paths = [itinerary["percorso"] for itinerary in itineraries]
 
@@ -918,4 +1338,5 @@ def cerca_itinerari(payload: CercaItinerariPayload) -> dict[str, Any]:
         "raw_paths": [" - ".join(path) for path in raw_paths],
         "itinerari": itineraries,
         "llm_response": llm_response,
+        "weather_context": weather_context,
     }

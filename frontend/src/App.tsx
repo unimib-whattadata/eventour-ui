@@ -63,6 +63,7 @@ type Itinerary = {
   tempo_totale_minuti: number;
   stop_intermedi_totali: number;
   punti_totali: number;
+  description?: string;
   punti: ItineraryPoint[];
 };
 
@@ -450,6 +451,36 @@ function FocusSelectedPoint({ point }: { point: [number, number] | null }) {
     }
     map.setView(point, 16, { animate: true });
   }, [point, map]);
+
+  return null;
+}
+
+function KeepMapSized({ watchKeys }: { watchKeys: string }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const invalidate = () => {
+      map.invalidateSize({ animate: false });
+    };
+
+    const rafId = window.requestAnimationFrame(invalidate);
+    const timeoutId = window.setTimeout(invalidate, 120);
+    const handleResize = () => invalidate();
+    window.addEventListener("resize", handleResize);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => invalidate());
+      resizeObserver.observe(map.getContainer());
+    }
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+      window.removeEventListener("resize", handleResize);
+      resizeObserver?.disconnect();
+    };
+  }, [map, watchKeys]);
 
   return null;
 }
@@ -926,6 +957,7 @@ function MapPage({ theme }: { theme: Theme }) {
     [number, number][]
   >([]);
   const [isRoadRouteLoading, setIsRoadRouteLoading] = useState(false);
+  const sidebarRef = useRef<HTMLElement | null>(null);
   const mapCardTitleText = theme === "dark" ? "text-white" : "";
   const mapCardSubtitleText =
     theme === "dark" ? "text-white/85" : "text-base-content/75";
@@ -1312,6 +1344,7 @@ function MapPage({ theme }: { theme: Theme }) {
       setItineraries(extractedItineraries);
 
       if (extractedItineraries.length > 0) {
+        sidebarRef.current?.scrollTo({ top: 0, behavior: "smooth" });
         setRequestState("success");
         setRequestMessage(
           `Found ${extractedItineraries.length} routes. Select one to display it on the map.`,
@@ -1335,9 +1368,10 @@ function MapPage({ theme }: { theme: Theme }) {
   };
 
   return (
-    <section className="grid h-[calc(100vh-4.5rem)] grid-cols-1 overflow-hidden md:grid-cols-[340px_1fr]">
+    <section className="grid h-[calc(100vh-4.5rem)] min-h-0 grid-cols-1 overflow-hidden md:grid-cols-[360px_minmax(0,1fr)]">
       <aside
-        className={`overflow-y-auto border-r border-base-300/80 p-4 backdrop-blur md:p-5 ${sidebarGradient}`}
+        ref={sidebarRef}
+        className={`min-h-0 overflow-y-auto border-r border-base-300/80 p-4 backdrop-blur md:p-5 ${sidebarGradient}`}
       >
         <h2
           className={`text-xl font-semibold ${theme === "dark" ? "text-white" : "text-slate-900"}`}
@@ -1528,38 +1562,49 @@ function MapPage({ theme }: { theme: Theme }) {
               <h3 className="text-sm font-semibold uppercase text-primary/90">
                 Available Routes
               </h3>
-              <div className="grid gap-2">
+              <div className="mt-2 grid gap-2">
                 {itineraries.map((itinerary, itineraryIndex) => {
                   const isSelected =
                     selectedItineraryPath === itinerary.percorso;
                   return (
-                    <div
+                    <article
                       key={`${itinerary.percorso}-${itineraryIndex}`}
-                      className={`collapse collapse-arrow rounded-md border hover:cursor-pointer ${
+                      className={`rounded-md border transition ${
                         isSelected
                           ? "border-primary bg-base-100"
                           : "border-base-300 bg-base-200"
                       }`}
                     >
-                      <input
-                        type="radio"
-                        name="itinerary-accordion"
-                        checked={isSelected}
-                        onChange={() => {
+                      <button
+                        type="button"
+                        className="w-full rounded-md px-3 py-3 text-left hover:cursor-pointer"
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedItineraryPath(null);
+                            setSelectedRoutePoint(null);
+                            return;
+                          }
                           setSelectedItineraryPath(itinerary.percorso);
                           setSelectedRoutePoint(null);
                         }}
-                      />
-                      <div className="collapse-title pr-10">
+                      >
                         <div className="flex items-center justify-between gap-2">
                           <h4 className="text-sm font-semibold">
                             <span className={mapCardTitleText}>
                               Route {itineraryIndex + 1}
                             </span>
                           </h4>
-                          <span className="badge badge-primary rounded-md">
-                            {itinerary.tempo_totale_minuti} min
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="badge badge-primary rounded-md">
+                              {itinerary.tempo_totale_minuti} min
+                            </span>
+                            <ChevronRight
+                              size={16}
+                              className={`text-base-content/65 transition-transform ${
+                                isSelected ? "rotate-90" : ""
+                              }`}
+                            />
+                          </div>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2 text-xs">
                           <span className={mapCardSubtitleText}>
@@ -1575,100 +1620,107 @@ function MapPage({ theme }: { theme: Theme }) {
                             {itinerary.punti_totali}
                           </span>
                         </div>
-                      </div>
-                      <div className="collapse-content pt-1">
-                        <div className="relative space-y-2">
-                          {itinerary.punti.map((point, pointIndex) => {
-                            const isLast =
-                              pointIndex === itinerary.punti.length - 1;
-                            const isActivePoint =
-                              selectedRoutePoint?.route ===
-                                itinerary.percorso &&
-                              selectedRoutePoint.index === pointIndex;
-                            return (
-                              <button
-                                key={`${itinerary.percorso}-${point.poi_id}-${pointIndex}`}
-                                type="button"
-                                className="relative block w-full pl-8 text-left hover:cursor-pointer"
-                                onClick={() => {
-                                  setSelectedItineraryPath(itinerary.percorso);
-                                  setSelectedRoutePoint({
-                                    route: itinerary.percorso,
-                                    index: pointIndex,
-                                  });
-                                }}
-                              >
-                                {!isLast ? (
-                                  <span className="absolute left-[9px] top-6 h-[calc(100%-0.2rem)] w-px bg-primary/45" />
-                                ) : null}
-                                <span
-                                  className={`absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
-                                    isActivePoint
-                                      ? "bg-secondary text-secondary-content"
-                                      : "bg-primary text-primary-content"
-                                  }`}
+                      </button>
+                      {isSelected ? (
+                        <div className="px-3 pb-3 pt-1">
+                          {itinerary.description ? (
+                            <div className="mb-2 rounded-md border border-base-300/80 bg-base-100/70 p-2 text-[12.5px] leading-5 whitespace-pre-wrap break-words text-base-content/85">
+                              {itinerary.description}
+                            </div>
+                          ) : null}
+                          <div className="relative space-y-2">
+                            {itinerary.punti.map((point, pointIndex) => {
+                              const isLast =
+                                pointIndex === itinerary.punti.length - 1;
+                              const isActivePoint =
+                                selectedRoutePoint?.route ===
+                                  itinerary.percorso &&
+                                selectedRoutePoint.index === pointIndex;
+                              return (
+                                <button
+                                  key={`${itinerary.percorso}-${point.poi_id}-${pointIndex}`}
+                                  type="button"
+                                  className="relative block w-full pl-8 text-left hover:cursor-pointer"
+                                  onClick={() => {
+                                    setSelectedItineraryPath(itinerary.percorso);
+                                    setSelectedRoutePoint({
+                                      route: itinerary.percorso,
+                                      index: pointIndex,
+                                    });
+                                  }}
                                 >
-                                  {pointIndex + 1}
-                                </span>
-                                <div
-                                  className={`rounded-md border bg-base-200/70 p-2 text-xs transition hover:border-primary/60 hover:bg-base-200/90 ${
-                                    isActivePoint
-                                      ? "border-primary shadow-sm"
-                                      : "border-base-300"
-                                  }`}
-                                >
-                                  <p className={`font-semibold ${mapCardTitleText}`}>
-                                    {point.label}
-                                  </p>
-                                  <div className="mt-2 grid gap-1.5">
-                                    <div className="flex items-center gap-2">
-                                      <span className={`w-12 ${mapCardSubtitleText}`}>
-                                        Node
-                                      </span>
-                                      <span className="badge badge-primary badge-sm rounded-md">
-                                        {point.poi_id}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className={`w-12 ${mapCardSubtitleText}`}>
-                                        Type
-                                      </span>
-                                      <span className="badge badge-secondary badge-sm rounded-md">
-                                        {point.type || "-"}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                      <span className={`w-12 pt-1 ${mapCardSubtitleText}`}>
-                                        Place
-                                      </span>
-                                      <span className="badge badge-accent badge-sm h-auto whitespace-normal rounded-md py-1 text-left leading-tight">
-                                        {point.place || "-"}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className={`w-12 ${mapCardSubtitleText}`}>
-                                        Lat
-                                      </span>
-                                      <span className="badge badge-info badge-sm rounded-md">
-                                        {point.latitude ?? "-"}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className={`w-12 ${mapCardSubtitleText}`}>
-                                        Lng
-                                      </span>
-                                      <span className="badge badge-success badge-sm rounded-md">
-                                        {point.longitude ?? "-"}
-                                      </span>
+                                  {!isLast ? (
+                                    <span className="absolute left-[9px] top-6 h-[calc(100%-0.2rem)] w-px bg-primary/45" />
+                                  ) : null}
+                                  <span
+                                    className={`absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                                      isActivePoint
+                                        ? "bg-secondary text-secondary-content"
+                                        : "bg-primary text-primary-content"
+                                    }`}
+                                  >
+                                    {pointIndex + 1}
+                                  </span>
+                                  <div
+                                    className={`rounded-md border bg-base-200/70 p-2 text-xs transition hover:border-primary/60 hover:bg-base-200/90 ${
+                                      isActivePoint
+                                        ? "border-primary shadow-sm"
+                                        : "border-base-300"
+                                    }`}
+                                  >
+                                    <p className={`font-semibold ${mapCardTitleText}`}>
+                                      {point.label}
+                                    </p>
+                                    <div className="mt-2 grid gap-1.5">
+                                      <div className="flex items-center gap-2">
+                                        <span className={`w-12 ${mapCardSubtitleText}`}>
+                                          Node
+                                        </span>
+                                        <span className="badge badge-primary badge-sm rounded-md">
+                                          {point.poi_id}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className={`w-12 ${mapCardSubtitleText}`}>
+                                          Type
+                                        </span>
+                                        <span className="badge badge-secondary badge-sm rounded-md">
+                                          {point.type || "-"}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-start gap-2">
+                                        <span className={`w-12 pt-1 ${mapCardSubtitleText}`}>
+                                          Place
+                                        </span>
+                                        <span className="badge badge-accent badge-sm h-auto whitespace-normal rounded-md py-1 text-left leading-tight">
+                                          {point.place || "-"}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className={`w-12 ${mapCardSubtitleText}`}>
+                                          Lat
+                                        </span>
+                                        <span className="badge badge-info badge-sm rounded-md">
+                                          {point.latitude ?? "-"}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className={`w-12 ${mapCardSubtitleText}`}>
+                                          Lng
+                                        </span>
+                                        <span className="badge badge-success badge-sm rounded-md">
+                                          {point.longitude ?? "-"}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </button>
-                            );
-                          })}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      ) : null}
+                    </article>
                   );
                 })}
               </div>
@@ -1677,7 +1729,7 @@ function MapPage({ theme }: { theme: Theme }) {
         ) : null}
       </aside>
 
-      <section className="relative h-full">
+      <section className="relative min-h-0 h-full">
         <MapContainer
           key={theme}
           center={milanCenter}
@@ -1709,6 +1761,9 @@ function MapPage({ theme }: { theme: Theme }) {
           ) : null}
           <FocusSelectedRoute coordinates={displayedRouteCoordinates} />
           <FocusSelectedPoint point={selectedPointCoordinates} />
+          <KeepMapSized
+            watchKeys={`${theme}|${itineraries.length}|${selectedItineraryPath ?? ""}|${displayedRouteCoordinates.length}|${isRoadRouteLoading ? 1 : 0}`}
+          />
           {(selectedItinerary?.punti || []).map((point, index, points) => {
             if (
               typeof point.latitude !== "number" ||
