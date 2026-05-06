@@ -168,6 +168,25 @@ const extractRoadRouteCoordinates = (payload: unknown): [number, number][] => {
   return routeCoordinates;
 };
 
+const parseSparqlNumericCell = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const withoutDatatype = trimmed.split("^^")[0]?.trim() ?? trimmed;
+  const withoutLangTag = withoutDatatype.split("@")[0]?.trim() ?? withoutDatatype;
+  const parsed = Number(withoutLangTag);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const tabs: Array<{ id: Tab; label: string }> = [
   { id: "home", label: "Home" },
   { id: "map", label: "Map" },
@@ -175,15 +194,107 @@ const tabs: Array<{ id: Tab; label: string }> = [
   { id: "about", label: "About" },
 ];
 
-const homeStats = [
-  { value: "9,361,049", label: "KG triples" },
-  { value: "906,939", label: "distinct subjects/entities" },
-  { value: "35", label: "ontology classes" },
-  { value: "91", label: "properties" },
-  { value: "21", label: "official Comune source datasets plus Wikidata" },
-  { value: "1,116", label: "Wikidata primary POIs" },
-  { value: "894", label: "Wikidata secondary POIs" },
-  { value: "1,286", label: "Wikidata context entities" },
+type HomeStatConfig = {
+  key: string;
+  label: string;
+  fallbackValue: string;
+  query: string;
+};
+
+const homeStatsConfig: HomeStatConfig[] = [
+  {
+    key: "kg_triples",
+    label: "KG triples",
+    fallbackValue: "9,361,049",
+    query: `SELECT (COUNT(*) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s ?p ?o .
+  }
+}`,
+  },
+  {
+    key: "distinct_subjects",
+    label: "distinct subjects/entities",
+    fallbackValue: "906,939",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s ?p ?o .
+  }
+}`,
+  },
+  {
+    key: "ontology_classes",
+    label: "ontology classes",
+    fallbackValue: "35",
+    query: `PREFIX owl: <http://www.w3.org/2002/07/owl#>
+SELECT (COUNT(DISTINCT ?class) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?class a owl:Class .
+  }
+}`,
+  },
+  {
+    key: "properties",
+    label: "properties",
+    fallbackValue: "91",
+    query: `SELECT (COUNT(DISTINCT ?p) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s ?p ?o .
+    FILTER(STRSTARTS(STR(?p), "http://eventour.unimib.it/"))
+  }
+}`,
+  },
+  {
+    key: "official_sources",
+    label: "official Comune source datasets plus Wikidata",
+    fallbackValue: "21",
+    query: `PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+SELECT (COUNT(DISTINCT ?source) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s dct:source ?source .
+    ?source a dcat:Dataset .
+  }
+}`,
+  },
+  {
+    key: "wikidata_primary",
+    label: "Wikidata primary POIs",
+    fallbackValue: "1,116",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s <http://eventour.unimib.it/hasEventourRole> <http://eventour.unimib.it/role/primary-poi> .
+  }
+}`,
+  },
+  {
+    key: "wikidata_secondary",
+    label: "Wikidata secondary POIs",
+    fallbackValue: "894",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s <http://eventour.unimib.it/hasEventourRole> <http://eventour.unimib.it/role/secondary-poi> .
+  }
+}`,
+  },
+  {
+    key: "wikidata_context",
+    label: "Wikidata context entities",
+    fallbackValue: "1,286",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s <http://eventour.unimib.it/hasEventourRole> <http://eventour.unimib.it/role/context-entity> .
+  }
+}`,
+  },
 ];
 
 const defaultSparqlQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -551,10 +662,93 @@ function App() {
 }
 
 function HomePage({ theme }: { theme: Theme }) {
+  const [stats, setStats] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      homeStatsConfig.map((stat) => [stat.key, stat.fallbackValue]),
+    ),
+  );
+  const [statsState, setStatsState] = useState<RequestState>("idle");
+  const numberFormatter = useMemo(() => new Intl.NumberFormat("en-US"), []);
   const homeCardStyle =
     theme === "dark"
       ? "border-base-200/80 bg-base-100/86 shadow-md shadow-black/25"
       : "border-base-300 bg-base-200/80";
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchHomeStats = async () => {
+      setStatsState("loading");
+      const candidates = getApiBaseCandidates();
+      let lastError = "No backend reachable.";
+
+      for (const candidate of candidates) {
+        try {
+          const entries = await Promise.all(
+            homeStatsConfig.map(async (stat) => {
+              const response = await fetch(`${candidate}/sparql/query`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ query: stat.query }),
+                signal: controller.signal,
+              });
+
+              if (!response.ok) {
+                const body = await response.text();
+                throw new Error(
+                  body ||
+                    `Backend ${candidate} responded with status ${response.status}.`,
+                );
+              }
+
+              const result = (await response.json()) as SparqlQueryResponse;
+              const firstRow = Array.isArray(result.rows) ? result.rows[0] : null;
+              const rawTotal = firstRow ? firstRow.total : undefined;
+              const total = parseSparqlNumericCell(rawTotal);
+              if (total === null) {
+                throw new Error(`Invalid total for stat "${stat.key}".`);
+              }
+
+              return [stat.key, numberFormatter.format(total)] as const;
+            }),
+          );
+
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          setStats(Object.fromEntries(entries));
+          setStatsState("success");
+          return;
+        } catch (error) {
+          if (controller.signal.aborted) {
+            return;
+          }
+          lastError =
+            error instanceof Error
+              ? error.message
+              : `Unable to reach ${candidate}.`;
+        }
+      }
+
+      if (controller.signal.aborted) {
+        return;
+      }
+      setStatsState("error");
+      console.error(lastError);
+    };
+
+    fetchHomeStats().catch(() => {
+      if (controller.signal.aborted) {
+        return;
+      }
+      setStatsState("error");
+    });
+
+    return () => controller.abort();
+  }, [numberFormatter]);
 
   return (
     <section className="mx-auto w-full max-w-5xl">
@@ -572,14 +766,18 @@ function HomePage({ theme }: { theme: Theme }) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-4">
-        {homeStats.map((stat) => (
+        {homeStatsConfig.map((stat) => (
           <article
             key={stat.label}
             className={`card rounded-md border backdrop-blur-sm ${homeCardStyle}`}
           >
             <div className="card-body items-center px-5 py-4 text-center">
-              <strong className="text-2xl font-extrabold text-primary md:text-3xl">
-                {stat.value}
+              <strong
+                className={`text-2xl font-extrabold text-primary md:text-3xl ${
+                  statsState === "loading" ? "animate-pulse" : ""
+                }`}
+              >
+                {stats[stat.key] ?? stat.fallbackValue}
               </strong>
               <span className="text-sm text-base-content/80 md:text-base">
                 {stat.label}
@@ -588,6 +786,11 @@ function HomePage({ theme }: { theme: Theme }) {
           </article>
         ))}
       </div>
+      {statsState === "error" ? (
+        <p className="mt-3 text-center text-xs text-warning">
+          Live stats are temporarily unavailable, showing fallback values.
+        </p>
+      ) : null}
     </section>
   );
 }
