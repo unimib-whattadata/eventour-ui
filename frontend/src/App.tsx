@@ -957,7 +957,7 @@ function MapPage({ theme }: { theme: Theme }) {
     [number, number][]
   >([]);
   const [isRoadRouteLoading, setIsRoadRouteLoading] = useState(false);
-  const sidebarRef = useRef<HTMLElement | null>(null);
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
   const mapCardTitleText = theme === "dark" ? "text-white" : "";
   const mapCardSubtitleText =
     theme === "dark" ? "text-white/85" : "text-base-content/75";
@@ -1368,11 +1368,11 @@ function MapPage({ theme }: { theme: Theme }) {
   };
 
   return (
-    <section className="grid h-[calc(100vh-4.5rem)] min-h-0 grid-cols-1 overflow-hidden md:grid-cols-[360px_minmax(0,1fr)]">
+    <section className="grid h-[calc(100vh-4.5rem)] min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden md:grid-cols-[360px_minmax(0,1fr)] md:grid-rows-1">
       <aside
-        ref={sidebarRef}
-        className={`min-h-0 overflow-y-auto border-r border-base-300/80 p-4 backdrop-blur md:p-5 ${sidebarGradient}`}
+        className={`min-h-0 border-b border-base-300/80 backdrop-blur md:border-b-0 md:border-r ${sidebarGradient}`}
       >
+        <div ref={sidebarRef} className="h-full overflow-y-auto p-4 md:p-5">
         <h2
           className={`text-xl font-semibold ${theme === "dark" ? "text-white" : "text-slate-900"}`}
         >
@@ -1727,6 +1727,7 @@ function MapPage({ theme }: { theme: Theme }) {
             </div>
           </section>
         ) : null}
+        </div>
       </aside>
 
       <section className="relative min-h-0 h-full">
