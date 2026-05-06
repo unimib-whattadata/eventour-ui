@@ -217,10 +217,26 @@ def _resolve_graphdb_query_endpoint() -> str:
         or query_params.get("repository")
         or [None]
     )[0]
-    if repo_id and parsed.path.rstrip("/").endswith("/sparql"):
-        base_path = parsed.path.rstrip("/")
-        new_path = f"{base_path[: -len('/sparql')]}/repositories/{repo_id}"
-        return parse.urlunsplit((parsed.scheme, parsed.netloc, new_path, "", ""))
+    if repo_id:
+        normalized_path = parsed.path.rstrip("/")
+
+        # Accept GraphDB endpoints configured as:
+        # - /sparql?repositoryId=<repo>
+        # - /?repositoryId=<repo>
+        # - /repositories?repositoryId=<repo>
+        if not normalized_path:
+            new_path = f"/repositories/{repo_id}"
+            return parse.urlunsplit((parsed.scheme, parsed.netloc, new_path, "", ""))
+
+        if normalized_path.endswith("/sparql"):
+            base_path = normalized_path[: -len("/sparql")]
+            new_path = f"{base_path}/repositories/{repo_id}"
+            return parse.urlunsplit((parsed.scheme, parsed.netloc, new_path, "", ""))
+
+        if normalized_path.endswith("/repositories"):
+            new_path = f"{normalized_path}/{repo_id}"
+            return parse.urlunsplit((parsed.scheme, parsed.netloc, new_path, "", ""))
+
     return configured
 
 
