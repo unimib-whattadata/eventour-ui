@@ -208,7 +208,7 @@ def _to_sparql_cell(binding: Any) -> str:
 def _resolve_graphdb_query_endpoint() -> str:
     configured = os.getenv(
         "GRAPHDB_SPARQL_ENDPOINT",
-        "https://eventour-graphdb.whattadata.it/sparql?repositoryId=eventour",
+        "https://eventour-graph.disco.unimib.it/repositories/eventour",
     )
     parsed = parse.urlsplit(configured)
     query_params = parse.parse_qs(parsed.query)

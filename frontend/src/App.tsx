@@ -1449,7 +1449,7 @@ function SparqlPage() {
   const [columns, setColumns] = useState<string[]>([]);
   const [rows, setRows] = useState<SparqlRow[]>([]);
   const [endpointUsed, setEndpointUsed] = useState(
-    "https://eventour-graphdb.whattadata.it/repositories/eventour",
+    "https://eventour-graph.disco.unimib.it/repositories/eventour",
   );
   const [queryExecuted, setQueryExecuted] = useState("");
   const [resultType, setResultType] = useState<"select" | "ask">("select");

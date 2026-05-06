@@ -16,5 +16,5 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
       GEMINI_MODEL_FALLBACKS: ${GEMINI_MODEL_FALLBACKS:-gemini-2.5-flash-lite}
-      GRAPHDB_SPARQL_ENDPOINT: ${GRAPHDB_SPARQL_ENDPOINT:-https://eventour-graphdb.whattadata.it/sparql?repositoryId=eventour}
+      GRAPHDB_SPARQL_ENDPOINT: ${GRAPHDB_SPARQL_ENDPOINT:-https://eventour-graph.disco.unimib.it/repositories/eventour}
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
