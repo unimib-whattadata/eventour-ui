@@ -263,43 +263,68 @@ def _call_graphdb_sparql(query: str, timeout_seconds: int) -> dict[str, Any]:
         with request.urlopen(req, timeout=timeout_seconds) as response:
             return response.read().decode("utf-8", errors="replace")
 
-    try:
-        post_request = request.Request(
-            url=endpoint,
-            data=form_body,
-            method="POST",
-            headers=headers,
-        )
-        raw = _read_response(post_request)
-    except error.HTTPError as post_exc:
-        post_detail = post_exc.read().decode("utf-8", errors="replace")
-        if post_exc.code != 405:
-            raise HTTPException(
-                status_code=502,
-                detail=f"GraphDB returned error {post_exc.code}: {post_detail}",
-            ) from post_exc
-
-        # Some deployments expose read-only SPARQL endpoints that accept GET only.
-        separator = "&" if "?" in endpoint else "?"
-        get_url = f"{endpoint}{separator}{parse.urlencode({'query': query})}"
-        try:
-            get_request = request.Request(
-                url=get_url,
-                method="GET",
-                headers={"Accept": "application/sparql-results+json"},
+    def _endpoint_candidates(base_endpoint: str) -> list[str]:
+        candidates = [base_endpoint]
+        parsed = parse.urlsplit(base_endpoint)
+        if parsed.scheme == "https":
+            http_variant = parse.urlunsplit(
+                ("http", parsed.netloc, parsed.path, parsed.query, parsed.fragment)
             )
-            raw = _read_response(get_request)
-        except error.HTTPError as get_exc:
-            detail = get_exc.read().decode("utf-8", errors="replace")
-            raise HTTPException(
-                status_code=502,
-                detail=f"GraphDB returned error {get_exc.code}: {detail}",
-            ) from get_exc
-    except error.URLError as exc:
+            if http_variant not in candidates:
+                candidates.append(http_variant)
+        return candidates
+
+    def _query_once(target_endpoint: str) -> tuple[str | None, str | None]:
+        try:
+            post_request = request.Request(
+                url=target_endpoint,
+                data=form_body,
+                method="POST",
+                headers=headers,
+            )
+            return _read_response(post_request), None
+        except error.HTTPError as post_exc:
+            post_detail = post_exc.read().decode("utf-8", errors="replace")
+            if post_exc.code != 405:
+                return (
+                    None,
+                    f"{target_endpoint} (POST) -> {post_exc.code}: {post_detail[:500]}",
+                )
+
+            # Some deployments expose read-only SPARQL endpoints that accept GET only.
+            separator = "&" if "?" in target_endpoint else "?"
+            get_url = f"{target_endpoint}{separator}{parse.urlencode({'query': query})}"
+            try:
+                get_request = request.Request(
+                    url=get_url,
+                    method="GET",
+                    headers={"Accept": "application/sparql-results+json"},
+                )
+                return _read_response(get_request), None
+            except error.HTTPError as get_exc:
+                detail = get_exc.read().decode("utf-8", errors="replace")
+                return (None, f"{get_url} (GET) -> {get_exc.code}: {detail[:500]}")
+            except error.URLError as get_exc:
+                return (None, f"{get_url} (GET) -> unreachable: {get_exc.reason}")
+        except error.URLError as post_exc:
+            return (None, f"{target_endpoint} (POST) -> unreachable: {post_exc.reason}")
+
+    raw: str | None = None
+    attempt_errors: list[str] = []
+    tried_endpoints = _endpoint_candidates(endpoint)
+    for candidate in tried_endpoints:
+        raw, attempt_error = _query_once(candidate)
+        if raw is not None:
+            break
+        if attempt_error:
+            attempt_errors.append(attempt_error)
+
+    if raw is None:
+        attempted = " | ".join(attempt_errors)[:2000]
         raise HTTPException(
             status_code=502,
-            detail=f"Unable to reach GraphDB: {exc.reason}",
-        ) from exc
+            detail=f"GraphDB query failed. Attempts: {attempted}",
+        )
 
     try:
         return json.loads(raw)
