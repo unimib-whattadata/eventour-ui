@@ -281,6 +281,8 @@ const buildOntologyFlow = (ntText: string): OntologyGraphModel => {
   const properties = new Set<string>();
   const schemes = new Set<string>();
   const concepts = new Set<string>();
+  const sortByLabel = (a: string, b: string): number =>
+    createNodeLabel(a, labels).localeCompare(createNodeLabel(b, labels));
 
   for (const triple of triples) {
     if (triple.predicate !== RDF_TYPE || triple.object.kind !== "uri") {
@@ -305,6 +307,7 @@ const buildOntologyFlow = (ntText: string): OntologyGraphModel => {
   const edges: Edge<OntologyEdgeData>[] = [];
   const edgeIds = new Set<string>();
   const connectedUris = new Set<string>();
+  const subClassPairs: Array<{ parent: string; child: string }> = [];
 
   const pushEdge = (
     source: string,
@@ -340,7 +343,11 @@ const buildOntologyFlow = (ntText: string): OntologyGraphModel => {
     }
 
     if (triple.predicate === RDFS_SUBCLASS_OF) {
-      pushEdge(triple.subject, triple.object.value, "subClassOf");
+      const child = triple.subject;
+      const parent = triple.object.value;
+      subClassPairs.push({ parent, child });
+      // Draw hierarchy from parent (top) to child (bottom).
+      pushEdge(parent, child, "subClassOf");
     } else if (triple.predicate === RDFS_DOMAIN) {
       pushEdge(triple.subject, triple.object.value, "domain");
     } else if (triple.predicate === RDFS_RANGE) {
@@ -382,6 +389,158 @@ const buildOntologyFlow = (ntText: string): OntologyGraphModel => {
     nodeKindMap.set(uri, "external");
   }
 
+  const hierarchyUris = new Set<string>();
+  const parentsByChild = new Map<string, Set<string>>();
+
+  const getSetFromMap = (map: Map<string, Set<string>>, key: string): Set<string> => {
+    let value = map.get(key);
+    if (!value) {
+      value = new Set<string>();
+      map.set(key, value);
+    }
+    return value;
+  };
+
+  for (const { parent, child } of subClassPairs) {
+    if (parent === child) {
+      continue;
+    }
+    hierarchyUris.add(parent);
+    hierarchyUris.add(child);
+    getSetFromMap(parentsByChild, child).add(parent);
+  }
+
+  const primaryParentByChild = new Map<string, string>();
+  for (const [child, parentsSet] of parentsByChild.entries()) {
+    const sortedParents = Array.from(parentsSet).sort(sortByLabel);
+    if (sortedParents[0]) {
+      primaryParentByChild.set(child, sortedParents[0]);
+    }
+  }
+
+  const primaryChildrenByParent = new Map<string, string[]>();
+  for (const [child, parent] of primaryParentByChild.entries()) {
+    const siblings = primaryChildrenByParent.get(parent) ?? [];
+    siblings.push(child);
+    primaryChildrenByParent.set(parent, siblings);
+  }
+  for (const [parent, children] of primaryChildrenByParent.entries()) {
+    primaryChildrenByParent.set(parent, children.sort(sortByLabel));
+  }
+
+  const sortedHierarchyUris = Array.from(hierarchyUris).sort(sortByLabel);
+  const rootUris = sortedHierarchyUris.filter(
+    (uri) => !primaryParentByChild.has(uri),
+  );
+  if (rootUris.length === 0 && sortedHierarchyUris.length > 0) {
+    rootUris.push(sortedHierarchyUris[0]);
+  }
+
+  const visitedHierarchy = new Set<string>();
+  const markHierarchy = (startUri: string) => {
+    const stack = [startUri];
+    while (stack.length > 0) {
+      const current = stack.pop();
+      if (!current || visitedHierarchy.has(current)) {
+        continue;
+      }
+      visitedHierarchy.add(current);
+      const children = primaryChildrenByParent.get(current) ?? [];
+      for (const child of children) {
+        stack.push(child);
+      }
+    }
+  };
+
+  for (const root of rootUris) {
+    markHierarchy(root);
+  }
+  for (const uri of sortedHierarchyUris) {
+    if (!visitedHierarchy.has(uri)) {
+      rootUris.push(uri);
+      markHierarchy(uri);
+    }
+  }
+
+  const hierarchyLeafCount = new Map<string, number>();
+  const computeLeafCount = (uri: string, stack: Set<string>): number => {
+    const cached = hierarchyLeafCount.get(uri);
+    if (typeof cached === "number") {
+      return cached;
+    }
+    if (stack.has(uri)) {
+      hierarchyLeafCount.set(uri, 1);
+      return 1;
+    }
+
+    stack.add(uri);
+    const children = primaryChildrenByParent.get(uri) ?? [];
+    if (children.length === 0) {
+      hierarchyLeafCount.set(uri, 1);
+      stack.delete(uri);
+      return 1;
+    }
+
+    let leafSum = 0;
+    for (const child of children) {
+      leafSum += computeLeafCount(child, stack);
+    }
+    const result = Math.max(1, leafSum);
+    hierarchyLeafCount.set(uri, result);
+    stack.delete(uri);
+    return result;
+  };
+
+  for (const root of rootUris) {
+    computeLeafCount(root, new Set<string>());
+  }
+
+  const hierarchyPositions = new Map<string, { x: number; y: number }>();
+  let leafCursor = 0;
+  const hierarchyNodeSpacingX = 220;
+  const hierarchyLevelSpacingY = 120;
+  const placeHierarchyNode = (uri: string, depth: number, stack: Set<string>): number => {
+    if (stack.has(uri)) {
+      const cycleX = leafCursor * hierarchyNodeSpacingX;
+      hierarchyPositions.set(uri, { x: cycleX, y: 36 + depth * hierarchyLevelSpacingY });
+      leafCursor += 1;
+      return cycleX;
+    }
+
+    const children = primaryChildrenByParent.get(uri) ?? [];
+    stack.add(uri);
+
+    if (children.length === 0) {
+      const x = leafCursor * hierarchyNodeSpacingX;
+      hierarchyPositions.set(uri, { x, y: 36 + depth * hierarchyLevelSpacingY });
+      leafCursor += 1;
+      stack.delete(uri);
+      return x;
+    }
+
+    const childPositions: number[] = [];
+    for (const child of children) {
+      childPositions.push(placeHierarchyNode(child, depth + 1, stack));
+    }
+    const x =
+      childPositions.reduce((sum, childX) => sum + childX, 0) / childPositions.length;
+    hierarchyPositions.set(uri, { x, y: 36 + depth * hierarchyLevelSpacingY });
+    stack.delete(uri);
+    return x;
+  };
+
+  for (const root of rootUris.sort(sortByLabel)) {
+    placeHierarchyNode(root, 0, new Set<string>());
+    leafCursor += 1;
+  }
+
+  let hierarchyMaxX = 0;
+  let hierarchyMaxY = 0;
+  for (const position of hierarchyPositions.values()) {
+    hierarchyMaxX = Math.max(hierarchyMaxX, position.x);
+    hierarchyMaxY = Math.max(hierarchyMaxY, position.y);
+  }
+
   const sortedUris = Array.from(allNodeUris).sort((a, b) => {
     const kindA = nodeKindMap.get(a) ?? "external";
     const kindB = nodeKindMap.get(b) ?? "external";
@@ -389,7 +548,7 @@ const buildOntologyFlow = (ntText: string): OntologyGraphModel => {
     if (rankDiff !== 0) {
       return rankDiff;
     }
-    return createNodeLabel(a, labels).localeCompare(createNodeLabel(b, labels));
+    return sortByLabel(a, b);
   });
 
   const groupedByKind: Record<OntologyNodeKind, string[]> = {
@@ -402,18 +561,52 @@ const buildOntologyFlow = (ntText: string): OntologyGraphModel => {
 
   for (const uri of sortedUris) {
     const kind = nodeKindMap.get(uri) ?? "external";
+    if (hierarchyPositions.has(uri)) {
+      continue;
+    }
     groupedByKind[kind].push(uri);
   }
 
+  const sideAreaStartX = hierarchyMaxX + 360;
+  const sideAreaStartY = 36;
   const groupLayout: Record<OntologyNodeKind, { x: number; cols: number }> = {
-    class: { x: 0, cols: 3 },
-    property: { x: 660, cols: 4 },
-    scheme: { x: 1500, cols: 2 },
-    concept: { x: 1980, cols: 3 },
-    external: { x: 2640, cols: 2 },
+    class: { x: sideAreaStartX, cols: 2 },
+    property: { x: sideAreaStartX, cols: 3 },
+    scheme: { x: sideAreaStartX + 720, cols: 2 },
+    concept: { x: sideAreaStartX + 1160, cols: 3 },
+    external: { x: sideAreaStartX + 1760, cols: 2 },
   };
 
   const nodes: Node<OntologyNodeData>[] = [];
+
+  for (const [uri, position] of hierarchyPositions.entries()) {
+    const kind = nodeKindMap.get(uri) ?? "external";
+    nodes.push({
+      id: uri,
+      position,
+      data: {
+        label: createNodeLabel(uri, labels),
+        compactUri: compactUri(uri),
+        kind,
+      },
+      draggable: true,
+      selectable: true,
+      style: {
+        border: `1px solid ${nodeColors[kind]}`,
+        borderRadius: 10,
+        background:
+          kind === "external"
+            ? "rgba(148, 163, 184, 0.14)"
+            : `color-mix(in srgb, ${nodeColors[kind]} 14%, white)`,
+        color: "#0f172a",
+        width: 190,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: 8,
+        boxShadow: "0 3px 12px rgba(15, 23, 42, 0.07)",
+      },
+    });
+  }
 
   for (const kind of [
     "class",
@@ -433,8 +626,8 @@ const buildOntologyFlow = (ntText: string): OntologyGraphModel => {
       nodes.push({
         id: uri,
         position: {
-          x: x + col * 210,
-          y: 40 + row * 96,
+          x: x + col * 220,
+          y: sideAreaStartY + row * 96,
         },
         data: {
           label: createNodeLabel(uri, labels),
