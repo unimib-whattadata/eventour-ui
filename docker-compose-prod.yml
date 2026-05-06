@@ -31,7 +31,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
       GEMINI_MODEL_FALLBACKS: ${GEMINI_MODEL_FALLBACKS:-gemini-2.5-flash-lite}
-      GRAPHDB_SPARQL_ENDPOINT: ${GRAPHDB_SPARQL_ENDPOINT:-https://eventour-graph.disco.unimib.it/repositories/eventour}
+      GRAPHDB_SPARQL_ENDPOINT: ${GRAPHDB_SPARQL_ENDPOINT:-https://eventour-graph.disco.unimib.it/sparql?repositoryId=eventour}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
       interval: 15s
