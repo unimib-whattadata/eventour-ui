@@ -328,6 +328,17 @@ WHERE {
 }
 LIMIT 100`;
 
+const competencyQueryPrefixes = `PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX evt: <http://eventour.unimib.it/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX uom: <http://www.opengis.net/def/uom/OGC/1.0/>`;
+
 const sparqlExamples: Array<{
   label: string;
   description: string;
@@ -536,6 +547,347 @@ WHERE {
     ?term ?p ?o .
   }
 }`,
+  },
+  {
+    label: "CQ01 · Role counts",
+    description: "How many Wikidata-derived semantic places per Eventour role.",
+    tone: "accent",
+    query: `${competencyQueryPrefixes}
+
+# CQ1. How many Wikidata-derived semantic places are available for each
+# Eventour role?
+################################################################################
+
+SELECT ?role ?roleLabel (COUNT(DISTINCT ?place) AS ?places)
+WHERE {
+  ?place a evt:Place ;
+         evt:hasEventourRole ?role .
+  OPTIONAL { ?role skos:prefLabel ?roleLabel . }
+}
+GROUP BY ?role ?roleLabel
+ORDER BY DESC(?places)
+
+################################################################################`,
+  },
+  {
+    label: "CQ02 · Entities in NIL",
+    description: "Retrieve Eventour entities located in NIL 1.",
+    tone: "primary",
+    query: `${competencyQueryPrefixes}
+
+# CQ2. Which Eventour entities are located in a given NIL area, including
+# official city entities and Wikidata semantic places?
+################################################################################
+
+SELECT ?entity ?label ?class ?role ?roleLabel ?wkt
+WHERE {
+  VALUES ?nil {
+    <http://eventour.unimib.it/milan/nil/1>
+  }
+
+  ?entity evt:inNIL ?nil ;
+          a ?class ;
+          geo:hasDefaultGeometry/geo:asWKT ?wkt .
+  OPTIONAL { ?entity rdfs:label ?label . }
+  OPTIONAL {
+    ?entity evt:hasEventourRole ?role .
+    OPTIONAL { ?role skos:prefLabel ?roleLabel . }
+  }
+}
+ORDER BY ?class LCASE(STR(?label))
+LIMIT 500
+
+################################################################################`,
+  },
+  {
+    label: "CQ03 · Primary POI near stop",
+    description: "Primary POIs within 300m of a public transport stop.",
+    tone: "secondary",
+    query: `${competencyQueryPrefixes}
+
+# CQ3. Which primary POIs are within 300 metres of a public transport stop?
+# Requires GeoSPARQL distance support.
+################################################################################
+
+SELECT ?poi ?poiLabel ?stop ?stopLabel ?distanceM
+WHERE {
+  ?poi a evt:Place ;
+       evt:hasEventourRole <http://eventour.unimib.it/role/primary-poi> ;
+       rdfs:label ?poiLabel ;
+       geo:hasDefaultGeometry/geo:asWKT ?poiWKT .
+
+  ?stop a evt:Stop ;
+        rdfs:label ?stopLabel ;
+        geo:hasDefaultGeometry/geo:asWKT ?stopWKT .
+
+  BIND(geof:distance(?poiWKT, ?stopWKT, uom:metre) AS ?distanceM)
+  FILTER(?distanceM <= 300)
+}
+ORDER BY ?poiLabel ?distanceM
+LIMIT 200
+
+################################################################################`,
+  },
+  {
+    label: "CQ04 · Toilets/fountains",
+    description: "Toilets and fountains within 250m of each primary POI.",
+    tone: "accent",
+    query: `${competencyQueryPrefixes}
+
+# CQ4. For each primary POI, which public toilets and drinking fountains are
+# available within 250 metres?
+# Requires GeoSPARQL distance support.
+################################################################################
+
+SELECT ?poi ?poiLabel ?service ?serviceLabel ?serviceType ?distanceM
+WHERE {
+  ?poi a evt:Place ;
+       evt:hasEventourRole <http://eventour.unimib.it/role/primary-poi> ;
+       rdfs:label ?poiLabel ;
+       geo:hasDefaultGeometry/geo:asWKT ?poiWKT .
+
+  VALUES (?serviceType ?serviceClass) {
+    ("public toilet" evt:PublicToilet)
+    ("drinking fountain" evt:DrinkingFountain)
+  }
+
+  ?service a ?serviceClass ;
+           rdfs:label ?serviceLabel ;
+           geo:hasDefaultGeometry/geo:asWKT ?serviceWKT .
+
+  BIND(geof:distance(?poiWKT, ?serviceWKT, uom:metre) AS ?distanceM)
+  FILTER(?distanceM <= 250)
+}
+ORDER BY ?poiLabel ?serviceType ?distanceM
+LIMIT 300
+
+################################################################################`,
+  },
+  {
+    label: "CQ05 · Crowd-staggering",
+    description: "Secondary POIs near event point and near a stop.",
+    tone: "primary",
+    query: `${competencyQueryPrefixes}
+
+# CQ5. Crowd-staggering query: given an event location, retrieve secondary POIs
+# within 1 km that also have a public transport stop within 300 m.
+# Replace the VALUES WKT with the event venue/event coordinate.
+# Requires GeoSPARQL distance support.
+################################################################################
+
+SELECT ?secondaryPoi ?label ?poiDistanceM ?nearestStop ?nearestStopLabel ?stopDistanceM
+WHERE {
+  VALUES ?eventWKT {
+    "POINT (9.1919 45.4642)"^^geo:wktLiteral
+  }
+
+  ?secondaryPoi a evt:Place ;
+      evt:hasEventourRole <http://eventour.unimib.it/role/secondary-poi> ;
+      rdfs:label ?label ;
+      geo:hasDefaultGeometry/geo:asWKT ?poiWKT .
+
+  BIND(geof:distance(?eventWKT, ?poiWKT, uom:metre) AS ?poiDistanceM)
+  FILTER(?poiDistanceM <= 1000)
+
+  ?nearestStop a evt:Stop ;
+      rdfs:label ?nearestStopLabel ;
+      geo:hasDefaultGeometry/geo:asWKT ?stopWKT .
+  BIND(geof:distance(?poiWKT, ?stopWKT, uom:metre) AS ?stopDistanceM)
+  FILTER(?stopDistanceM <= 300)
+}
+ORDER BY ?poiDistanceM ?stopDistanceM
+LIMIT 100
+
+################################################################################`,
+  },
+  {
+    label: "CQ06 · NIL profiles",
+    description: "NIL areas ranked by support infrastructure richness.",
+    tone: "secondary",
+    query: `${competencyQueryPrefixes}
+
+# CQ6. Which NIL areas have the richest urban support infrastructure?
+################################################################################
+
+SELECT ?nil ?nilLabel
+       (COUNT(DISTINCT ?bench) AS ?benches)
+       (COUNT(DISTINCT ?fountain) AS ?drinkingFountains)
+       (COUNT(DISTINCT ?toilet) AS ?publicToilets)
+       (COUNT(DISTINCT ?stop) AS ?stops)
+       (COUNT(DISTINCT ?bikeStation) AS ?bikeSharingStations)
+WHERE {
+  ?nil a evt:NILArea .
+  OPTIONAL { ?nil rdfs:label ?nilLabel . }
+  OPTIONAL { ?bench a evt:Bench ; evt:inNIL ?nil . }
+  OPTIONAL { ?fountain a evt:DrinkingFountain ; evt:inNIL ?nil . }
+  OPTIONAL { ?toilet a evt:PublicToilet ; evt:inNIL ?nil . }
+  OPTIONAL { ?stop a evt:Stop ; evt:inNIL ?nil . }
+  OPTIONAL { ?bikeStation a evt:BikeSharingStation ; evt:inNIL ?nil . }
+}
+GROUP BY ?nil ?nilLabel
+ORDER BY DESC(?benches + ?drinkingFountains + ?publicToilets + ?stops + ?bikeSharingStations)
+LIMIT 50
+
+################################################################################`,
+  },
+  {
+    label: "CQ07 · Underserved POIs",
+    description: "Primary POIs with no nearby toilet/fountain within 300m.",
+    tone: "accent",
+    query: `${competencyQueryPrefixes}
+
+# CQ7. Which primary POIs are underserved, i.e., have no public toilet or
+# drinking fountain within 300 metres?
+# Requires GeoSPARQL distance support.
+################################################################################
+
+SELECT ?poi ?label ?categoryLabel
+WHERE {
+  ?poi a evt:Place ;
+       evt:hasEventourRole <http://eventour.unimib.it/role/primary-poi> ;
+       rdfs:label ?label ;
+       geo:hasDefaultGeometry/geo:asWKT ?poiWKT .
+  OPTIONAL {
+    ?poi evt:hasEventourCategory/skos:prefLabel ?categoryLabel .
+  }
+
+  FILTER NOT EXISTS {
+    VALUES ?serviceClass { evt:PublicToilet evt:DrinkingFountain }
+    ?service a ?serviceClass ;
+             geo:hasDefaultGeometry/geo:asWKT ?serviceWKT .
+    BIND(geof:distance(?poiWKT, ?serviceWKT, uom:metre) AS ?distanceM)
+    FILTER(?distanceM <= 300)
+  }
+}
+ORDER BY LCASE(STR(?label))
+LIMIT 100
+
+################################################################################`,
+  },
+  {
+    label: "CQ08 · Accessibility profile",
+    description: "Multimodal accessibility metrics for primary POIs.",
+    tone: "primary",
+    query: `${competencyQueryPrefixes}
+
+# CQ8. Multimodal accessibility profile for primary POIs: count nearby public
+# transport stops, BikeMI stations, bicycle parking areas, and parking
+# facilities.
+# Requires GeoSPARQL distance support.
+################################################################################
+
+SELECT ?poi ?label
+       (COUNT(DISTINCT ?stop) AS ?nearbyStops)
+       (COUNT(DISTINCT ?bikeMi) AS ?nearbyBikeMiStations)
+       (COUNT(DISTINCT ?bikeParking) AS ?nearbyBicycleParkingAreas)
+       (COUNT(DISTINCT ?parking) AS ?nearbyParkingFacilities)
+WHERE {
+  ?poi a evt:Place ;
+       evt:hasEventourRole <http://eventour.unimib.it/role/primary-poi> ;
+       rdfs:label ?label ;
+       geo:hasDefaultGeometry/geo:asWKT ?poiWKT .
+
+  OPTIONAL {
+    ?stop a evt:Stop ; geo:hasDefaultGeometry/geo:asWKT ?stopWKT .
+    BIND(geof:distance(?poiWKT, ?stopWKT, uom:metre) AS ?stopDistanceM)
+    FILTER(?stopDistanceM <= 300)
+  }
+  OPTIONAL {
+    ?bikeMi a evt:BikeSharingStation ; geo:hasDefaultGeometry/geo:asWKT ?bikeMiWKT .
+    BIND(geof:distance(?poiWKT, ?bikeMiWKT, uom:metre) AS ?bikeMiDistanceM)
+    FILTER(?bikeMiDistanceM <= 500)
+  }
+  OPTIONAL {
+    ?bikeParking a evt:BicycleParkingArea ; geo:hasDefaultGeometry/geo:asWKT ?bikeParkingWKT .
+    BIND(geof:distance(?poiWKT, ?bikeParkingWKT, uom:metre) AS ?bikeParkingDistanceM)
+    FILTER(?bikeParkingDistanceM <= 300)
+  }
+  OPTIONAL {
+    ?parking a evt:ParkingFacility ; geo:hasDefaultGeometry/geo:asWKT ?parkingWKT .
+    BIND(geof:distance(?poiWKT, ?parkingWKT, uom:metre) AS ?parkingDistanceM)
+    FILTER(?parkingDistanceM <= 700)
+  }
+}
+GROUP BY ?poi ?label
+ORDER BY DESC(?nearbyStops) DESC(?nearbyBikeMiStations) DESC(?nearbyBicycleParkingAreas)
+LIMIT 100
+
+################################################################################`,
+  },
+  {
+    label: "CQ09 · Provenance audit",
+    description: "Source and provenance trail for a selected Wikidata entity.",
+    tone: "secondary",
+    query: `${competencyQueryPrefixes}
+
+# CQ9. Provenance audit: for a selected entity, retrieve source dataset,
+# source record, generation activity, and external Wikidata link if present.
+################################################################################
+
+SELECT ?entity ?label ?source ?sourceRecord ?activity ?wikidata
+WHERE {
+  VALUES ?entity {
+    <http://eventour.unimib.it/milan/entity/wikidata/Q10986>
+  }
+  OPTIONAL { ?entity rdfs:label ?label . }
+  OPTIONAL { ?entity dct:source ?source . }
+  OPTIONAL { ?entity prov:wasDerivedFrom ?sourceRecord . }
+  OPTIONAL { ?entity prov:wasGeneratedBy ?activity . }
+  OPTIONAL { ?entity owl:sameAs ?wikidata . }
+}
+
+################################################################################`,
+  },
+  {
+    label: "CQ10 · Itinerary seed ranking",
+    description: "Rank primary POIs by nearby operational support score.",
+    tone: "accent",
+    query: `${competencyQueryPrefixes}
+
+# CQ10. Difficult itinerary-seed query: rank primary POIs by nearby operational
+# support, combining transport, toilets, drinking fountains, and bike sharing.
+# Requires GeoSPARQL distance support.
+################################################################################
+
+SELECT ?poi ?label ?categoryLabel
+       (COUNT(DISTINCT ?stop) AS ?stops300m)
+       (COUNT(DISTINCT ?toilet) AS ?toilets300m)
+       (COUNT(DISTINCT ?fountain) AS ?fountains300m)
+       (COUNT(DISTINCT ?bikeMi) AS ?bikeMi500m)
+       ((COUNT(DISTINCT ?stop) + COUNT(DISTINCT ?toilet) + COUNT(DISTINCT ?fountain) + COUNT(DISTINCT ?bikeMi)) AS ?supportScore)
+WHERE {
+  ?poi a evt:Place ;
+       evt:hasEventourRole <http://eventour.unimib.it/role/primary-poi> ;
+       rdfs:label ?label ;
+       geo:hasDefaultGeometry/geo:asWKT ?poiWKT .
+  OPTIONAL { ?poi evt:hasEventourCategory/skos:prefLabel ?categoryLabel . }
+
+  OPTIONAL {
+    ?stop a evt:Stop ; geo:hasDefaultGeometry/geo:asWKT ?stopWKT .
+    BIND(geof:distance(?poiWKT, ?stopWKT, uom:metre) AS ?stopDistanceM)
+    FILTER(?stopDistanceM <= 300)
+  }
+  OPTIONAL {
+    ?toilet a evt:PublicToilet ; geo:hasDefaultGeometry/geo:asWKT ?toiletWKT .
+    BIND(geof:distance(?poiWKT, ?toiletWKT, uom:metre) AS ?toiletDistanceM)
+    FILTER(?toiletDistanceM <= 300)
+  }
+  OPTIONAL {
+    ?fountain a evt:DrinkingFountain ; geo:hasDefaultGeometry/geo:asWKT ?fountainWKT .
+    BIND(geof:distance(?poiWKT, ?fountainWKT, uom:metre) AS ?fountainDistanceM)
+    FILTER(?fountainDistanceM <= 300)
+  }
+  OPTIONAL {
+    ?bikeMi a evt:BikeSharingStation ; geo:hasDefaultGeometry/geo:asWKT ?bikeMiWKT .
+    BIND(geof:distance(?poiWKT, ?bikeMiWKT, uom:metre) AS ?bikeMiDistanceM)
+    FILTER(?bikeMiDistanceM <= 500)
+  }
+}
+GROUP BY ?poi ?label ?categoryLabel
+ORDER BY DESC(?supportScore) LCASE(STR(?label))
+LIMIT 50
+
+################################################################################`,
   },
 ];
 
