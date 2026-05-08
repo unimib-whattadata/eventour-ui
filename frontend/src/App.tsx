@@ -301,6 +301,25 @@ WHERE {
   },
 ];
 
+const HOME_STATS_DEFAULT_CONCURRENCY = 2;
+const SPARQL_QUERY_TIMEOUT_SECONDS = 180;
+
+const getHomeStatsConcurrency = (): number => {
+  const raw = (
+    import.meta.env.VITE_HOME_STATS_CONCURRENCY as string | undefined
+  )?.trim();
+  if (!raw) {
+    return HOME_STATS_DEFAULT_CONCURRENCY;
+  }
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return HOME_STATS_DEFAULT_CONCURRENCY;
+  }
+
+  return parsed;
+};
+
 const defaultSparqlQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
 SELECT ?s ?p ?o
@@ -900,6 +919,54 @@ function HomePage({ theme }: { theme: Theme }) {
     setStatsRefreshNonce((previous) => previous + 1);
   };
 
+  const fetchStatValue = async (
+    stat: HomeStatConfig,
+    candidates: string[],
+    signal: AbortSignal,
+  ): Promise<string> => {
+    let lastError = `No backend reachable for stat "${stat.key}".`;
+
+    for (const candidate of candidates) {
+      try {
+        const response = await fetch(`${candidate}/sparql/query`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query: stat.query }),
+          signal,
+        });
+
+        if (!response.ok) {
+          const body = await response.text();
+          throw new Error(
+            body || `Backend ${candidate} responded with status ${response.status}.`,
+          );
+        }
+
+        const result = (await response.json()) as SparqlQueryResponse;
+        const firstRow = Array.isArray(result.rows) ? result.rows[0] : null;
+        const rawTotal = firstRow ? firstRow.total : undefined;
+        const total = parseSparqlNumericCell(rawTotal);
+        if (total === null) {
+          throw new Error(`Invalid total for stat "${stat.key}".`);
+        }
+
+        return numberFormatter.format(total);
+      } catch (error) {
+        if (signal.aborted) {
+          throw error;
+        }
+        lastError =
+          error instanceof Error
+            ? error.message
+            : `Unable to reach ${candidate} for stat "${stat.key}".`;
+      }
+    }
+
+    throw new Error(lastError);
+  };
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -909,112 +976,68 @@ function HomePage({ theme }: { theme: Theme }) {
       setStatsErrors(createStatsErrorMap(false));
 
       const candidates = getApiBaseCandidates();
-      let lastError = "No backend reachable.";
+      let hasFailures = false;
+      const configuredConcurrency = getHomeStatsConcurrency();
 
-      for (const candidate of candidates) {
-        try {
-          const statResults = await Promise.allSettled(
-            homeStatsConfig.map(async (stat) => {
-              const response = await fetch(`${candidate}/sparql/query`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ query: stat.query }),
-                signal: controller.signal,
-              });
+      const statsQueue = [...homeStatsConfig];
+      const workerCount = Math.min(
+        configuredConcurrency,
+        homeStatsConfig.length,
+      );
 
-              if (!response.ok) {
-                const body = await response.text();
-                throw new Error(
-                  body ||
-                    `Backend ${candidate} responded with status ${response.status}.`,
-                );
-              }
-
-              const result = (await response.json()) as SparqlQueryResponse;
-              const firstRow = Array.isArray(result.rows)
-                ? result.rows[0]
-                : null;
-              const rawTotal = firstRow ? firstRow.total : undefined;
-              const total = parseSparqlNumericCell(rawTotal);
-              if (total === null) {
-                throw new Error(`Invalid total for stat "${stat.key}".`);
-              }
-
-              return [stat.key, numberFormatter.format(total)] as const;
-            }),
-          );
-
+      const worker = async () => {
+        while (statsQueue.length > 0) {
           if (controller.signal.aborted) {
             return;
           }
+          const stat = statsQueue.shift();
+          if (!stat) {
+            return;
+          }
 
-          const nextStats = createStatsValueMap("Errore query");
-          const nextErrors = createStatsErrorMap(true);
-          let successCount = 0;
-          const statErrorMessages: string[] = [];
-
-          statResults.forEach((result, index) => {
-            const stat = homeStatsConfig[index];
-            if (result.status === "fulfilled") {
-              const [key, value] = result.value;
-              nextStats[key] = value;
-              nextErrors[key] = false;
-              successCount += 1;
+          try {
+            const value = await fetchStatValue(stat, candidates, controller.signal);
+            if (controller.signal.aborted) {
               return;
             }
-
-            const reason =
-              result.reason instanceof Error
-                ? result.reason.message
-                : `Unable to load stat "${stat.key}".`;
-            statErrorMessages.push(`${stat.key}: ${reason}`);
-          });
-
-          if (successCount === 0) {
-            lastError =
-              statErrorMessages[0] ??
-              `Unable to reach backend at ${candidate}.`;
-            continue;
-          }
-
-          setStats(nextStats);
-          setStatsErrors(nextErrors);
-          setStatsState(
-            successCount === homeStatsConfig.length ? "success" : "error",
-          );
-
-          if (statErrorMessages.length > 0) {
+            setStats((previous) => ({ ...previous, [stat.key]: value }));
+            setStatsErrors((previous) => ({ ...previous, [stat.key]: false }));
+          } catch (error) {
+            if (controller.signal.aborted) {
+              return;
+            }
+            hasFailures = true;
+            setStats((previous) => ({ ...previous, [stat.key]: "Query error" }));
+            setStatsErrors((previous) => ({ ...previous, [stat.key]: true }));
             console.error(
-              `Some Home stats failed on ${candidate}: ${statErrorMessages.join(" | ")}`,
+              error instanceof Error
+                ? `Home stat "${stat.key}" failed: ${error.message}`
+                : `Home stat "${stat.key}" failed.`,
             );
           }
-          return;
-        } catch (error) {
-          if (controller.signal.aborted) {
-            return;
-          }
-          lastError =
-            error instanceof Error
-              ? error.message
-              : `Unable to reach ${candidate}.`;
         }
-      }
+      };
+
+      await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
       if (controller.signal.aborted) {
         return;
       }
-      setStats(createStatsValueMap("Errore query"));
-      setStatsErrors(createStatsErrorMap(true));
-      setStatsState("error");
-      console.error(lastError);
+
+      setStatsState(hasFailures ? "error" : "success");
     };
 
-    fetchHomeStats().catch(() => {
+    fetchHomeStats().catch((error) => {
       if (controller.signal.aborted) {
         return;
       }
+      console.error(
+        error instanceof Error
+          ? `Failed to load Home stats: ${error.message}`
+          : "Failed to load Home stats.",
+      );
+      setStats(createStatsValueMap("Query error"));
+      setStatsErrors(createStatsErrorMap(true));
       setStatsState("error");
     });
 
@@ -1063,7 +1086,11 @@ function HomePage({ theme }: { theme: Theme }) {
                   statsErrors[stat.key]
                     ? "text-lg text-error md:text-xl"
                     : "text-2xl text-primary md:text-3xl"
-                } ${statsState === "loading" ? "animate-pulse" : ""}`}
+                } ${
+                  statsState === "loading" && stats[stat.key] === "..."
+                    ? "animate-pulse"
+                    : ""
+                }`}
               >
                 {stats[stat.key] ?? "..."}
               </strong>
@@ -2222,11 +2249,25 @@ function SparqlPage() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ query: cleaned }),
+            body: JSON.stringify({
+              query: cleaned,
+              timeout_seconds: SPARQL_QUERY_TIMEOUT_SECONDS,
+            }),
           });
 
           if (!response.ok) {
             const body = await response.text();
+            const statusLine =
+              response.status === 504
+                ? "Gateway timeout (504)."
+                : `HTTP ${response.status}.`;
+            const looksLikeHtml = /<html[\s>]/i.test(body);
+
+            if (looksLikeHtml) {
+              lastError = `${statusLine} The proxy timed out while waiting for the query result. Try adding LIMIT or narrowing the graph scope.`;
+              continue;
+            }
+
             try {
               const parsed = JSON.parse(body) as {
                 detail?: unknown;
