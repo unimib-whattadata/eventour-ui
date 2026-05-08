@@ -781,6 +781,11 @@ function AnimatedGraphBackground({ theme }: { theme: Theme }) {
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const showsFooter =
+    activeTab !== "map" && activeTab !== "ontology" && activeTab !== "sparql";
+  const mainHeightClass = showsFooter
+    ? "h-[calc(100vh-4.5rem-16.5rem)]"
+    : "h-[calc(100vh-4.5rem)]";
 
   const appBackgroundStyle = useMemo(
     () => ({
@@ -851,7 +856,7 @@ function App() {
           <OntologyPage theme={theme} />
         ) : (
           <main
-            className={`mx-auto h-[calc(100vh-4.5rem-16.5rem)] w-full max-w-[1160px] overflow-y-auto px-4 py-8 pb-12 md:px-6 md:py-9 md:pb-12 ${
+            className={`mx-auto ${mainHeightClass} w-full max-w-[1160px] overflow-y-auto px-4 py-8 pb-12 md:px-6 md:py-9 md:pb-12 ${
               activeTab === "sparql" ? "hide-scrollbar" : ""
             }`}
           >
@@ -862,11 +867,7 @@ function App() {
         )}
       </div>
 
-      {activeTab !== "map" &&
-      activeTab !== "ontology" &&
-      activeTab !== "sparql" ? (
-        <AppFooter />
-      ) : null}
+      {showsFooter ? <AppFooter /> : null}
     </div>
   );
 }
