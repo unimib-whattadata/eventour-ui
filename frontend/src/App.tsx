@@ -184,14 +184,15 @@ const parseSparqlNumericCell = (value: unknown): number | null => {
   }
 
   const withoutDatatype = trimmed.split("^^")[0]?.trim() ?? trimmed;
-  const withoutLangTag = withoutDatatype.split("@")[0]?.trim() ?? withoutDatatype;
+  const withoutLangTag =
+    withoutDatatype.split("@")[0]?.trim() ?? withoutDatatype;
   const parsed = Number(withoutLangTag);
   return Number.isFinite(parsed) ? parsed : null;
 };
 
 const tabs: Array<{ id: Tab; label: string }> = [
   { id: "home", label: "Home" },
-  { id: "map", label: "Map" },
+  { id: "map", label: "Itinerary" },
   { id: "ontology", label: "Ontology" },
   { id: "sparql", label: "SPARQL" },
   { id: "about", label: "About" },
@@ -701,29 +702,47 @@ function App() {
 }
 
 function HomePage({ theme }: { theme: Theme }) {
-  const [stats, setStats] = useState<Record<string, string>>(() =>
+  const createStatsValueMap = (value: string): Record<string, string> =>
     Object.fromEntries(
-      homeStatsConfig.map((stat) => [stat.key, stat.fallbackValue]),
-    ),
+      homeStatsConfig.map((stat) => [stat.key, value]),
+    ) as Record<string, string>;
+  const createStatsErrorMap = (hasError: boolean): Record<string, boolean> =>
+    Object.fromEntries(
+      homeStatsConfig.map((stat) => [stat.key, hasError]),
+    ) as Record<string, boolean>;
+
+  const [stats, setStats] = useState<Record<string, string>>(() =>
+    createStatsValueMap("..."),
+  );
+  const [statsErrors, setStatsErrors] = useState<Record<string, boolean>>(() =>
+    createStatsErrorMap(false),
   );
   const [statsState, setStatsState] = useState<RequestState>("idle");
+  const [statsRefreshNonce, setStatsRefreshNonce] = useState(0);
   const numberFormatter = useMemo(() => new Intl.NumberFormat("en-US"), []);
   const homeCardStyle =
     theme === "dark"
       ? "border-base-200/80 bg-base-100/86 shadow-md shadow-black/25"
       : "border-base-300 bg-base-200/80";
 
+  const refreshStats = () => {
+    setStatsRefreshNonce((previous) => previous + 1);
+  };
+
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchHomeStats = async () => {
       setStatsState("loading");
+      setStats(createStatsValueMap("..."));
+      setStatsErrors(createStatsErrorMap(false));
+
       const candidates = getApiBaseCandidates();
       let lastError = "No backend reachable.";
 
       for (const candidate of candidates) {
         try {
-          const entries = await Promise.all(
+          const statResults = await Promise.allSettled(
             homeStatsConfig.map(async (stat) => {
               const response = await fetch(`${candidate}/sparql/query`, {
                 method: "POST",
@@ -743,7 +762,9 @@ function HomePage({ theme }: { theme: Theme }) {
               }
 
               const result = (await response.json()) as SparqlQueryResponse;
-              const firstRow = Array.isArray(result.rows) ? result.rows[0] : null;
+              const firstRow = Array.isArray(result.rows)
+                ? result.rows[0]
+                : null;
               const rawTotal = firstRow ? firstRow.total : undefined;
               const total = parseSparqlNumericCell(rawTotal);
               if (total === null) {
@@ -758,8 +779,46 @@ function HomePage({ theme }: { theme: Theme }) {
             return;
           }
 
-          setStats(Object.fromEntries(entries));
-          setStatsState("success");
+          const nextStats = createStatsValueMap("Errore query");
+          const nextErrors = createStatsErrorMap(true);
+          let successCount = 0;
+          const statErrorMessages: string[] = [];
+
+          statResults.forEach((result, index) => {
+            const stat = homeStatsConfig[index];
+            if (result.status === "fulfilled") {
+              const [key, value] = result.value;
+              nextStats[key] = value;
+              nextErrors[key] = false;
+              successCount += 1;
+              return;
+            }
+
+            const reason =
+              result.reason instanceof Error
+                ? result.reason.message
+                : `Unable to load stat "${stat.key}".`;
+            statErrorMessages.push(`${stat.key}: ${reason}`);
+          });
+
+          if (successCount === 0) {
+            lastError =
+              statErrorMessages[0] ??
+              `Unable to reach backend at ${candidate}.`;
+            continue;
+          }
+
+          setStats(nextStats);
+          setStatsErrors(nextErrors);
+          setStatsState(
+            successCount === homeStatsConfig.length ? "success" : "error",
+          );
+
+          if (statErrorMessages.length > 0) {
+            console.error(
+              `Some Home stats failed on ${candidate}: ${statErrorMessages.join(" | ")}`,
+            );
+          }
           return;
         } catch (error) {
           if (controller.signal.aborted) {
@@ -775,6 +834,8 @@ function HomePage({ theme }: { theme: Theme }) {
       if (controller.signal.aborted) {
         return;
       }
+      setStats(createStatsValueMap("Errore query"));
+      setStatsErrors(createStatsErrorMap(true));
       setStatsState("error");
       console.error(lastError);
     };
@@ -787,7 +848,7 @@ function HomePage({ theme }: { theme: Theme }) {
     });
 
     return () => controller.abort();
-  }, [numberFormatter]);
+  }, [numberFormatter, statsRefreshNonce]);
 
   return (
     <section className="mx-auto w-full max-w-5xl">
@@ -804,7 +865,22 @@ function HomePage({ theme }: { theme: Theme }) {
         </p>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-4">
+      <div className="mt-6 flex justify-center">
+        <button
+          className="btn btn-outline btn-sm rounded-md"
+          onClick={refreshStats}
+          disabled={statsState === "loading"}
+        >
+          {statsState === "loading" ? (
+            <LoaderCircle size={16} className="animate-spin" />
+          ) : (
+            <RotateCcw size={16} />
+          )}
+          Refresh stats
+        </button>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
         {homeStatsConfig.map((stat) => (
           <article
             key={stat.label}
@@ -812,11 +888,13 @@ function HomePage({ theme }: { theme: Theme }) {
           >
             <div className="card-body items-center px-5 py-4 text-center">
               <strong
-                className={`text-2xl font-extrabold text-primary md:text-3xl ${
-                  statsState === "loading" ? "animate-pulse" : ""
-                }`}
+                className={`font-extrabold ${
+                  statsErrors[stat.key]
+                    ? "text-lg text-error md:text-xl"
+                    : "text-2xl text-primary md:text-3xl"
+                } ${statsState === "loading" ? "animate-pulse" : ""}`}
               >
-                {stats[stat.key] ?? stat.fallbackValue}
+                {stats[stat.key] ?? "..."}
               </strong>
               <span className="text-sm text-base-content/80 md:text-base">
                 {stat.label}
@@ -827,7 +905,7 @@ function HomePage({ theme }: { theme: Theme }) {
       </div>
       {statsState === "error" ? (
         <p className="mt-3 text-center text-xs text-warning">
-          Live stats are temporarily unavailable, showing fallback values.
+          Some statistics could not be loaded. Click refresh to retry.
         </p>
       ) : null}
     </section>
@@ -1128,7 +1206,9 @@ function MapPage({ theme }: { theme: Theme }) {
         for (const baseUrl of routingApiCandidates) {
           const routeUrl = `${baseUrl}/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?${routeQuery}`;
           try {
-            const response = await fetch(routeUrl, { signal: controller.signal });
+            const response = await fetch(routeUrl, {
+              signal: controller.signal,
+            });
             if (!response.ok) {
               continue;
             }
@@ -1377,360 +1457,374 @@ function MapPage({ theme }: { theme: Theme }) {
           ref={sidebarRef}
           className="h-full overflow-y-auto overscroll-contain p-4 md:p-5"
         >
-        <h2
-          className={`text-xl font-semibold ${theme === "dark" ? "text-white" : "text-slate-900"}`}
-        >
-          Route Planner
-        </h2>
-        <p
-          className={`mt-1 text-sm ${theme === "dark" ? "text-white" : "text-slate-800"}`}
-        >
-          Choose start/destination nodes, points of interest filters, and route
-          limits.
-        </p>
+          <h2
+            className={`text-xl font-semibold ${theme === "dark" ? "text-white" : "text-slate-900"}`}
+          >
+            Route Planner
+          </h2>
+          <p
+            className={`mt-1 text-sm ${theme === "dark" ? "text-white" : "text-slate-800"}`}
+          >
+            Choose start/destination nodes, points of interest filters, and
+            route limits.
+          </p>
 
-        <form
-          className="card mt-4 rounded-md border border-base-300/80 bg-base-100/72 shadow-sm"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <div className="card-body grid gap-4 p-4">
-            <label className="form-control w-full">
-              <div className="label pb-1">
-                <span className="label-text">Start Node</span>
-              </div>
-              <select
-                className="select select-bordered w-full rounded-md"
-                disabled={poisState === "loading" || poiOptions.length === 0}
-                {...register("nodo_partenza")}
-              >
-                {poisState === "loading" ? (
-                  <option>Loading POIs...</option>
+          <form
+            className="card mt-4 rounded-md border border-base-300/80 bg-base-100/72 shadow-sm"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <div className="card-body grid gap-4 p-4">
+              <label className="form-control w-full">
+                <div className="label pb-1">
+                  <span className="label-text">Start Node</span>
+                </div>
+                <select
+                  className="select select-bordered w-full rounded-md"
+                  disabled={poisState === "loading" || poiOptions.length === 0}
+                  {...register("nodo_partenza")}
+                >
+                  {poisState === "loading" ? (
+                    <option>Loading POIs...</option>
+                  ) : null}
+                  {poisState === "error" ? (
+                    <option>POI loading error</option>
+                  ) : null}
+                  {poiOptions.map((poi) => (
+                    <option key={`start-${poi.poi_id}`} value={poi.poi_id}>
+                      {poi.poi_id} - {poi.label} ({poi.type})
+                    </option>
+                  ))}
+                </select>
+                {errors.nodo_partenza ? (
+                  <span className="mt-1 text-xs text-error">
+                    {errors.nodo_partenza.message}
+                  </span>
                 ) : null}
-                {poisState === "error" ? (
-                  <option>POI loading error</option>
+              </label>
+
+              <label className="form-control w-full">
+                <div className="label pb-1">
+                  <span className="label-text">Destination Node</span>
+                </div>
+                <select
+                  className="select select-bordered w-full rounded-md"
+                  disabled={poisState === "loading" || poiOptions.length === 0}
+                  {...register("nodo_arrivo")}
+                >
+                  {poisState === "loading" ? (
+                    <option>Loading POIs...</option>
+                  ) : null}
+                  {poisState === "error" ? (
+                    <option>POI loading error</option>
+                  ) : null}
+                  {poiOptions.map((poi) => (
+                    <option key={`end-${poi.poi_id}`} value={poi.poi_id}>
+                      {poi.poi_id} - {poi.label} ({poi.type})
+                    </option>
+                  ))}
+                </select>
+                {errors.nodo_arrivo ? (
+                  <span className="mt-1 text-xs text-error">
+                    {errors.nodo_arrivo.message}
+                  </span>
                 ) : null}
-                {poiOptions.map((poi) => (
-                  <option key={`start-${poi.poi_id}`} value={poi.poi_id}>
-                    {poi.poi_id} - {poi.label} ({poi.type})
-                  </option>
-                ))}
-              </select>
-              {errors.nodo_partenza ? (
-                <span className="mt-1 text-xs text-error">
-                  {errors.nodo_partenza.message}
-                </span>
-              ) : null}
-            </label>
+              </label>
 
-            <label className="form-control w-full">
-              <div className="label pb-1">
-                <span className="label-text">Destination Node</span>
-              </div>
-              <select
-                className="select select-bordered w-full rounded-md"
-                disabled={poisState === "loading" || poiOptions.length === 0}
-                {...register("nodo_arrivo")}
-              >
-                {poisState === "loading" ? (
-                  <option>Loading POIs...</option>
-                ) : null}
-                {poisState === "error" ? (
-                  <option>POI loading error</option>
-                ) : null}
-                {poiOptions.map((poi) => (
-                  <option key={`end-${poi.poi_id}`} value={poi.poi_id}>
-                    {poi.poi_id} - {poi.label} ({poi.type})
-                  </option>
-                ))}
-              </select>
-              {errors.nodo_arrivo ? (
-                <span className="mt-1 text-xs text-error">
-                  {errors.nodo_arrivo.message}
-                </span>
-              ) : null}
-            </label>
-
-            <fieldset className="rounded-md border border-base-300 p-3">
-              <legend className="px-2 text-sm font-semibold">
-                POI Filters
-              </legend>
-              <div className="grid gap-1">
-                {placeFilters.map((filter) => (
-                  <label
-                    key={filter.value}
-                    className="label cursor-pointer justify-start gap-3 py-1"
-                  >
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-sm rounded-sm"
-                      value={filter.value}
-                      {...register("filtri")}
-                    />
-                    <span className="label-text">{filter.label}</span>
-                  </label>
-                ))}
-              </div>
-              {errors.filtri ? (
-                <span className="mt-2 block text-xs text-error">
-                  {errors.filtri.message}
-                </span>
-              ) : null}
-            </fieldset>
-
-            <label className="form-control w-full">
-              <div className="label pb-1">
-                <span className="label-text">
-                  Maximum Intermediate Stops (0-10)
-                </span>
-              </div>
-              <input
-                type="number"
-                min={0}
-                max={10}
-                step={1}
-                className="input input-bordered w-full rounded-md"
-                {...register("max_stop_intermedi", {
-                  valueAsNumber: true,
-                })}
-              />
-              {errors.max_stop_intermedi ? (
-                <span className="mt-1 text-xs text-error">
-                  {errors.max_stop_intermedi.message}
-                </span>
-              ) : null}
-            </label>
-
-            <label className="form-control w-full">
-              <div className="label pb-1">
-                <span className="label-text">
-                  Maximum Available Time (minutes)
-                </span>
-              </div>
-              <input
-                type="number"
-                min={0}
-                step={1}
-                className="input input-bordered w-full rounded-md"
-                {...register("tempo_massimo_minuti", {
-                  valueAsNumber: true,
-                })}
-              />
-              {errors.tempo_massimo_minuti ? (
-                <span className="mt-1 text-xs text-error">
-                  {errors.tempo_massimo_minuti.message}
-                </span>
-              ) : null}
-            </label>
-
-            <button
-              className="btn btn-primary rounded-md"
-              type="submit"
-              disabled={
-                requestState === "loading" ||
-                poisState === "loading" ||
-                poiOptions.length === 0 ||
-                allFiltersSelected
-              }
-            >
-              {requestState === "loading" ? (
-                <>
-                  <LoaderCircle size={14} className="animate-spin" />
-                  Calculating
-                </>
-              ) : (
-                "Calculate Routes"
-              )}
-            </button>
-
-            {requestMessage && requestState !== "loading" ? (
-              <div
-                className={`alert rounded-md ${
-                  requestState === "success"
-                    ? "alert-success"
-                    : requestState === "error"
-                      ? "alert-error"
-                      : "alert-info"
-                }`}
-              >
-                <span className="text-sm whitespace-pre-wrap break-words">
-                  {requestMessage}
-                </span>
-              </div>
-            ) : null}
-          </div>
-        </form>
-
-        {itineraries.length > 0 ? (
-          <section className="card mt-4 rounded-md border border-primary/30 bg-base-100/72 shadow-sm">
-            <div className="card-body p-4">
-              <h3 className="text-sm font-semibold uppercase text-primary/90">
-                Available Routes
-              </h3>
-              <div className="mt-2 grid gap-2">
-                {itineraries.map((itinerary, itineraryIndex) => {
-                  const isSelected =
-                    selectedItineraryPath === itinerary.percorso;
-                  return (
-                    <article
-                      key={`${itinerary.percorso}-${itineraryIndex}`}
-                      className={`rounded-md border transition ${
-                        isSelected
-                          ? "border-primary bg-base-100"
-                          : "border-base-300 bg-base-200"
-                      }`}
+              <fieldset className="rounded-md border border-base-300 p-3">
+                <legend className="px-2 text-sm font-semibold">
+                  POI Filters
+                </legend>
+                <div className="grid gap-1">
+                  {placeFilters.map((filter) => (
+                    <label
+                      key={filter.value}
+                      className="label cursor-pointer justify-start gap-3 py-1"
                     >
-                      <button
-                        type="button"
-                        className="w-full rounded-md px-3 py-3 text-left hover:cursor-pointer"
-                        onClick={() => {
-                          if (isSelected) {
-                            setSelectedItineraryPath(null);
-                            setSelectedRoutePoint(null);
-                            return;
-                          }
-                          setSelectedItineraryPath(itinerary.percorso);
-                          setSelectedRoutePoint(null);
-                        }}
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-sm rounded-sm"
+                        value={filter.value}
+                        {...register("filtri")}
+                      />
+                      <span className="label-text">{filter.label}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.filtri ? (
+                  <span className="mt-2 block text-xs text-error">
+                    {errors.filtri.message}
+                  </span>
+                ) : null}
+              </fieldset>
+
+              <label className="form-control w-full">
+                <div className="label pb-1">
+                  <span className="label-text">
+                    Maximum Intermediate Stops (0-10)
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  step={1}
+                  className="input input-bordered w-full rounded-md"
+                  {...register("max_stop_intermedi", {
+                    valueAsNumber: true,
+                  })}
+                />
+                {errors.max_stop_intermedi ? (
+                  <span className="mt-1 text-xs text-error">
+                    {errors.max_stop_intermedi.message}
+                  </span>
+                ) : null}
+              </label>
+
+              <label className="form-control w-full">
+                <div className="label pb-1">
+                  <span className="label-text">
+                    Maximum Available Time (minutes)
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  className="input input-bordered w-full rounded-md"
+                  {...register("tempo_massimo_minuti", {
+                    valueAsNumber: true,
+                  })}
+                />
+                {errors.tempo_massimo_minuti ? (
+                  <span className="mt-1 text-xs text-error">
+                    {errors.tempo_massimo_minuti.message}
+                  </span>
+                ) : null}
+              </label>
+
+              <button
+                className="btn btn-primary rounded-md"
+                type="submit"
+                disabled={
+                  requestState === "loading" ||
+                  poisState === "loading" ||
+                  poiOptions.length === 0 ||
+                  allFiltersSelected
+                }
+              >
+                {requestState === "loading" ? (
+                  <>
+                    <LoaderCircle size={14} className="animate-spin" />
+                    Calculating
+                  </>
+                ) : (
+                  "Calculate Routes"
+                )}
+              </button>
+
+              {requestMessage && requestState !== "loading" ? (
+                <div
+                  className={`alert rounded-md ${
+                    requestState === "success"
+                      ? "alert-success"
+                      : requestState === "error"
+                        ? "alert-error"
+                        : "alert-info"
+                  }`}
+                >
+                  <span className="text-sm whitespace-pre-wrap break-words">
+                    {requestMessage}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          </form>
+
+          {itineraries.length > 0 ? (
+            <section className="card mt-4 rounded-md border border-primary/30 bg-base-100/72 shadow-sm">
+              <div className="card-body p-4">
+                <h3 className="text-sm font-semibold uppercase text-primary/90">
+                  Available Routes
+                </h3>
+                <div className="mt-2 grid gap-2">
+                  {itineraries.map((itinerary, itineraryIndex) => {
+                    const isSelected =
+                      selectedItineraryPath === itinerary.percorso;
+                    return (
+                      <article
+                        key={`${itinerary.percorso}-${itineraryIndex}`}
+                        className={`rounded-md border transition ${
+                          isSelected
+                            ? "border-primary bg-base-100"
+                            : "border-base-300 bg-base-200"
+                        }`}
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <h4 className="text-sm font-semibold">
-                            <span className={mapCardTitleText}>
-                              Route {itineraryIndex + 1}
-                            </span>
-                          </h4>
-                          <div className="flex items-center gap-2">
-                            <span className="badge badge-primary rounded-md">
-                              {itinerary.tempo_totale_minuti} min
-                            </span>
-                            <ChevronRight
-                              size={16}
-                              className={`text-base-content/65 transition-transform ${
-                                isSelected ? "rotate-90" : ""
-                              }`}
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                          <span className={mapCardSubtitleText}>
-                            Intermediate stops
-                          </span>
-                          <span className="badge badge-outline rounded-md">
-                            {itinerary.stop_intermedi_totali}
-                          </span>
-                          <span className={mapCardSubtitleText}>
-                            Total points
-                          </span>
-                          <span className="badge badge-outline rounded-md">
-                            {itinerary.punti_totali}
-                          </span>
-                        </div>
-                      </button>
-                      {isSelected ? (
-                        <div className="px-3 pb-3 pt-1">
-                          {itinerary.description ? (
-                            <div className="mb-2 rounded-md border border-base-300/80 bg-base-100/70 p-2 text-[12.5px] leading-5 whitespace-pre-wrap break-words text-base-content/85">
-                              {itinerary.description}
+                        <button
+                          type="button"
+                          className="w-full rounded-md px-3 py-3 text-left hover:cursor-pointer"
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedItineraryPath(null);
+                              setSelectedRoutePoint(null);
+                              return;
+                            }
+                            setSelectedItineraryPath(itinerary.percorso);
+                            setSelectedRoutePoint(null);
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="text-sm font-semibold">
+                              <span className={mapCardTitleText}>
+                                Route {itineraryIndex + 1}
+                              </span>
+                            </h4>
+                            <div className="flex items-center gap-2">
+                              <span className="badge badge-primary rounded-md">
+                                {itinerary.tempo_totale_minuti} min
+                              </span>
+                              <ChevronRight
+                                size={16}
+                                className={`text-base-content/65 transition-transform ${
+                                  isSelected ? "rotate-90" : ""
+                                }`}
+                              />
                             </div>
-                          ) : null}
-                          <div className="relative space-y-2">
-                            {itinerary.punti.map((point, pointIndex) => {
-                              const isLast =
-                                pointIndex === itinerary.punti.length - 1;
-                              const isActivePoint =
-                                selectedRoutePoint?.route ===
-                                  itinerary.percorso &&
-                                selectedRoutePoint.index === pointIndex;
-                              return (
-                                <button
-                                  key={`${itinerary.percorso}-${point.poi_id}-${pointIndex}`}
-                                  type="button"
-                                  className="relative block w-full pl-8 text-left hover:cursor-pointer"
-                                  onClick={() => {
-                                    setSelectedItineraryPath(itinerary.percorso);
-                                    setSelectedRoutePoint({
-                                      route: itinerary.percorso,
-                                      index: pointIndex,
-                                    });
-                                  }}
-                                >
-                                  {!isLast ? (
-                                    <span className="absolute left-[9px] top-6 h-[calc(100%-0.2rem)] w-px bg-primary/45" />
-                                  ) : null}
-                                  <span
-                                    className={`absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
-                                      isActivePoint
-                                        ? "bg-secondary text-secondary-content"
-                                        : "bg-primary text-primary-content"
-                                    }`}
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                            <span className={mapCardSubtitleText}>
+                              Intermediate stops
+                            </span>
+                            <span className="badge badge-outline rounded-md">
+                              {itinerary.stop_intermedi_totali}
+                            </span>
+                            <span className={mapCardSubtitleText}>
+                              Total points
+                            </span>
+                            <span className="badge badge-outline rounded-md">
+                              {itinerary.punti_totali}
+                            </span>
+                          </div>
+                        </button>
+                        {isSelected ? (
+                          <div className="px-3 pb-3 pt-1">
+                            {itinerary.description ? (
+                              <div className="mb-2 rounded-md border border-base-300/80 bg-base-100/70 p-2 text-[12.5px] leading-5 whitespace-pre-wrap break-words text-base-content/85">
+                                {itinerary.description}
+                              </div>
+                            ) : null}
+                            <div className="relative space-y-2">
+                              {itinerary.punti.map((point, pointIndex) => {
+                                const isLast =
+                                  pointIndex === itinerary.punti.length - 1;
+                                const isActivePoint =
+                                  selectedRoutePoint?.route ===
+                                    itinerary.percorso &&
+                                  selectedRoutePoint.index === pointIndex;
+                                return (
+                                  <button
+                                    key={`${itinerary.percorso}-${point.poi_id}-${pointIndex}`}
+                                    type="button"
+                                    className="relative block w-full pl-8 text-left hover:cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedItineraryPath(
+                                        itinerary.percorso,
+                                      );
+                                      setSelectedRoutePoint({
+                                        route: itinerary.percorso,
+                                        index: pointIndex,
+                                      });
+                                    }}
                                   >
-                                    {pointIndex + 1}
-                                  </span>
-                                  <div
-                                    className={`rounded-md border bg-base-200/70 p-2 text-xs transition hover:border-primary/60 hover:bg-base-200/90 ${
-                                      isActivePoint
-                                        ? "border-primary shadow-sm"
-                                        : "border-base-300"
-                                    }`}
-                                  >
-                                    <p className={`font-semibold ${mapCardTitleText}`}>
-                                      {point.label}
-                                    </p>
-                                    <div className="mt-2 grid gap-1.5">
-                                      <div className="flex items-center gap-2">
-                                        <span className={`w-12 ${mapCardSubtitleText}`}>
-                                          Node
-                                        </span>
-                                        <span className="badge badge-primary badge-sm rounded-md">
-                                          {point.poi_id}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <span className={`w-12 ${mapCardSubtitleText}`}>
-                                          Type
-                                        </span>
-                                        <span className="badge badge-secondary badge-sm rounded-md">
-                                          {point.type || "-"}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-start gap-2">
-                                        <span className={`w-12 pt-1 ${mapCardSubtitleText}`}>
-                                          Place
-                                        </span>
-                                        <span className="badge badge-accent badge-sm h-auto whitespace-normal rounded-md py-1 text-left leading-tight">
-                                          {point.place || "-"}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <span className={`w-12 ${mapCardSubtitleText}`}>
-                                          Lat
-                                        </span>
-                                        <span className="badge badge-info badge-sm rounded-md">
-                                          {point.latitude ?? "-"}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <span className={`w-12 ${mapCardSubtitleText}`}>
-                                          Lng
-                                        </span>
-                                        <span className="badge badge-success badge-sm rounded-md">
-                                          {point.longitude ?? "-"}
-                                        </span>
+                                    {!isLast ? (
+                                      <span className="absolute left-[9px] top-6 h-[calc(100%-0.2rem)] w-px bg-primary/45" />
+                                    ) : null}
+                                    <span
+                                      className={`absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                                        isActivePoint
+                                          ? "bg-secondary text-secondary-content"
+                                          : "bg-primary text-primary-content"
+                                      }`}
+                                    >
+                                      {pointIndex + 1}
+                                    </span>
+                                    <div
+                                      className={`rounded-md border bg-base-200/70 p-2 text-xs transition hover:border-primary/60 hover:bg-base-200/90 ${
+                                        isActivePoint
+                                          ? "border-primary shadow-sm"
+                                          : "border-base-300"
+                                      }`}
+                                    >
+                                      <p
+                                        className={`font-semibold ${mapCardTitleText}`}
+                                      >
+                                        {point.label}
+                                      </p>
+                                      <div className="mt-2 grid gap-1.5">
+                                        <div className="flex items-center gap-2">
+                                          <span
+                                            className={`w-12 ${mapCardSubtitleText}`}
+                                          >
+                                            Node
+                                          </span>
+                                          <span className="badge badge-primary badge-sm rounded-md">
+                                            {point.poi_id}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span
+                                            className={`w-12 ${mapCardSubtitleText}`}
+                                          >
+                                            Type
+                                          </span>
+                                          <span className="badge badge-secondary badge-sm rounded-md">
+                                            {point.type || "-"}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                          <span
+                                            className={`w-12 pt-1 ${mapCardSubtitleText}`}
+                                          >
+                                            Place
+                                          </span>
+                                          <span className="badge badge-accent badge-sm h-auto whitespace-normal rounded-md py-1 text-left leading-tight">
+                                            {point.place || "-"}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span
+                                            className={`w-12 ${mapCardSubtitleText}`}
+                                          >
+                                            Lat
+                                          </span>
+                                          <span className="badge badge-info badge-sm rounded-md">
+                                            {point.latitude ?? "-"}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span
+                                            className={`w-12 ${mapCardSubtitleText}`}
+                                          >
+                                            Lng
+                                          </span>
+                                          <span className="badge badge-success badge-sm rounded-md">
+                                            {point.longitude ?? "-"}
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </button>
-                              );
-                            })}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      ) : null}
-                    </article>
-                  );
-                })}
+                        ) : null}
+                      </article>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </section>
-        ) : null}
+            </section>
+          ) : null}
         </div>
       </aside>
 
@@ -1808,13 +1902,17 @@ function MapPage({ theme }: { theme: Theme }) {
                     </p>
                     <div className="mt-2 grid gap-1.5">
                       <div className="flex items-center gap-2">
-                        <span className={`w-12 ${mapCardSubtitleText}`}>Node</span>
+                        <span className={`w-12 ${mapCardSubtitleText}`}>
+                          Node
+                        </span>
                         <span className="badge badge-primary badge-sm rounded-md">
                           {point.poi_id}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`w-12 ${mapCardSubtitleText}`}>Type</span>
+                        <span className={`w-12 ${mapCardSubtitleText}`}>
+                          Type
+                        </span>
                         <span className="badge badge-secondary badge-sm rounded-md">
                           {point.type || "-"}
                         </span>
@@ -1828,13 +1926,17 @@ function MapPage({ theme }: { theme: Theme }) {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`w-12 ${mapCardSubtitleText}`}>Lat</span>
+                        <span className={`w-12 ${mapCardSubtitleText}`}>
+                          Lat
+                        </span>
                         <span className="badge badge-info badge-sm rounded-md">
                           {point.latitude}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`w-12 ${mapCardSubtitleText}`}>Lng</span>
+                        <span className={`w-12 ${mapCardSubtitleText}`}>
+                          Lng
+                        </span>
                         <span className="badge badge-success badge-sm rounded-md">
                           {point.longitude}
                         </span>
