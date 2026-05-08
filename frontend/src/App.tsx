@@ -316,21 +316,9 @@ const sparqlExamples: Array<{
   tone: "primary" | "secondary" | "accent";
 }> = [
   {
-    label: "Milan graph (50)",
-    description: "Inspect triples from the Milan named graph.",
+    label: "Total triples",
+    description: "Count all triples in the Milan named graph.",
     tone: "primary",
-    query: `SELECT ?s ?p ?o
-WHERE {
-  GRAPH http://eventour.unimib.it/graph/milan {
-    ?s ?p ?o .
-  }
-}
-LIMIT 50`,
-  },
-  {
-    label: "Count triples in Milan",
-    description: "Compute the total number of triples in graph/milan.",
-    tone: "secondary",
     query: `SELECT (COUNT(*) AS ?total)
 WHERE {
   GRAPH <http://eventour.unimib.it/graph/milan> {
@@ -339,18 +327,196 @@ WHERE {
 }`,
   },
   {
-    label: "Types in Milan",
-    description: "Rank RDF classes by occurrence in graph/milan.",
-    tone: "accent",
-    query: `SELECT ?type (COUNT(*) AS ?count)
+    label: "Distinct subjects",
+    description: "Count distinct subjects/entities in the Milan graph.",
+    tone: "secondary",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
 WHERE {
   GRAPH <http://eventour.unimib.it/graph/milan> {
-    ?s a ?type .
+    ?s ?p ?o .
+  }
+}`,
+  },
+  {
+    label: "Distinct URI objects",
+    description: "Count distinct objects that are URIs (IRIs).",
+    tone: "accent",
+    query: `SELECT (COUNT(DISTINCT ?o) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s ?p ?o .
+    FILTER(isIRI(?o))
+  }
+}`,
+  },
+  {
+    label: "Ontology classes (all)",
+    description: "Count all classes declared as owl:Class.",
+    tone: "primary",
+    query: `PREFIX owl: <http://www.w3.org/2002/07/owl#>
+SELECT (COUNT(DISTINCT ?class) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?class a owl:Class .
+  }
+}`,
+  },
+  {
+    label: "Eventour classes",
+    description: "Count owl:Class resources in the Eventour namespace.",
+    tone: "secondary",
+    query: `PREFIX owl: <http://www.w3.org/2002/07/owl#>
+SELECT (COUNT(DISTINCT ?class) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?class a owl:Class .
+    FILTER(STRSTARTS(STR(?class), "http://eventour.unimib.it/"))
+  }
+}`,
+  },
+  {
+    label: "Properties (total)",
+    description: "Count all distinct predicates in the Milan graph.",
+    tone: "accent",
+    query: `SELECT (COUNT(DISTINCT ?p) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s ?p ?o .
+  }
+}`,
+  },
+  {
+    label: "Properties (Eventour)",
+    description: "Count distinct predicates in the Eventour namespace.",
+    tone: "primary",
+    query: `SELECT (COUNT(DISTINCT ?p) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s ?p ?o .
+    FILTER(STRSTARTS(STR(?p), "http://eventour.unimib.it/"))
+  }
+}`,
+  },
+  {
+    label: "Official Comune datasets",
+    description: "Count official source datasets linked via dct:source.",
+    tone: "secondary",
+    query: `PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+SELECT (COUNT(DISTINCT ?source) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s dct:source ?source .
+    ?source a dcat:Dataset .
+  }
+}`,
+  },
+  {
+    label: "Wikidata primary POIs",
+    description: "Count entities tagged with role primary-poi.",
+    tone: "accent",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s <http://eventour.unimib.it/hasEventourRole> <http://eventour.unimib.it/role/primary-poi> .
+  }
+}`,
+  },
+  {
+    label: "Wikidata secondary POIs",
+    description: "Count entities tagged with role secondary-poi.",
+    tone: "primary",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s <http://eventour.unimib.it/hasEventourRole> <http://eventour.unimib.it/role/secondary-poi> .
+  }
+}`,
+  },
+  {
+    label: "Wikidata context entities",
+    description: "Count entities tagged with role context-entity.",
+    tone: "secondary",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s <http://eventour.unimib.it/hasEventourRole> <http://eventour.unimib.it/role/context-entity> .
+  }
+}`,
+  },
+  {
+    label: "Wikidata semantic places",
+    description: "Count all role-tagged Wikidata semantic places.",
+    tone: "accent",
+    query: `SELECT (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    ?s <http://eventour.unimib.it/hasEventourRole> ?role .
+    VALUES ?role {
+      <http://eventour.unimib.it/role/primary-poi>
+      <http://eventour.unimib.it/role/secondary-poi>
+      <http://eventour.unimib.it/role/context-entity>
+    }
+  }
+}`,
+  },
+  {
+    label: "Key class counts",
+    description: "Count the 10 requested classes in one query.",
+    tone: "primary",
+    query: `PREFIX evt: <http://eventour.unimib.it/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT ?class (COUNT(DISTINCT ?s) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    VALUES ?class {
+      evt:SourceRecord
+      geo:Feature
+      geo:Geometry
+      evt:PhysicalAsset
+      evt:Tree
+      evt:Bench
+      evt:StopInRoute
+      evt:Stop
+      evt:BicycleParkingArea
+      evt:Place
+    }
+    ?s a ?class .
   }
 }
-GROUP BY ?type
-ORDER BY DESC(?count)
-LIMIT 25`,
+GROUP BY ?class
+ORDER BY DESC(?total)`,
+  },
+  {
+    label: "Eventour ontology triples",
+    description: "Count schema triples for Eventour ontology terms.",
+    tone: "secondary",
+    query: `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+SELECT (COUNT(*) AS ?total)
+WHERE {
+  GRAPH <http://eventour.unimib.it/graph/milan> {
+    {
+      SELECT DISTINCT ?term
+      WHERE {
+        GRAPH <http://eventour.unimib.it/graph/milan> {
+          ?term a ?kind .
+          FILTER(
+            ?kind IN (
+              owl:Class,
+              rdf:Property,
+              owl:ObjectProperty,
+              owl:DatatypeProperty,
+              owl:AnnotationProperty
+            )
+          )
+          FILTER(STRSTARTS(STR(?term), "http://eventour.unimib.it/"))
+        }
+      }
+    }
+    ?term ?p ?o .
+  }
+}`,
   },
 ];
 
@@ -696,7 +862,11 @@ function App() {
         )}
       </div>
 
-      {activeTab !== "map" && activeTab !== "ontology" ? <AppFooter /> : null}
+      {activeTab !== "map" &&
+      activeTab !== "ontology" &&
+      activeTab !== "sparql" ? (
+        <AppFooter />
+      ) : null}
     </div>
   );
 }
