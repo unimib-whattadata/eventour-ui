@@ -586,11 +586,11 @@ Input:
 
 Regole obbligatorie:
 1. Ogni percorso deve partire da nodo_partenza e arrivare a nodo_arrivo.
-2. Usa solo collegamenti presenti in tabella (From_POI -> To_POI).
+2. Usa solo collegamenti presenti in tabella; ogni collegamento e bidirezionale.
 3. {duration_rule}
 4. Il numero massimo di stop intermedi e {payload.max_stop_intermedi}. Quindi i nodi totali per percorso non possono superare {max_total_stops}.
 5. Se non trovi percorsi validi restituisci solo una riga vuota.
-6. Restituisci AL MASSIMO 3 itinerari (ideale 2 o 3), ordinati dal piu interessante al meno interessante.
+6. Restituisci 3 itinerari distinti quando i vincoli lo consentono, ordinati dal piu interessante al meno interessante.
 7. Non troncare mai gli ID dei nodi: ogni ID deve essere completo.
 8. Non limitarti a percorsi con pochi stop: quando i vincoli lo permettono, includi almeno un percorso con molti stop intermedi (vicino al massimo consentito).
 9. Includi itinerari con stop intermedi variabili, non solo percorsi diretti o con 1 stop.
@@ -1263,6 +1263,14 @@ def cerca_itinerari(payload: CercaItinerariPayload) -> dict[str, Any]:
     )
     fallback_used = False
     route_descriptions: dict[tuple[str, ...], str] = {}
+    local_candidate_paths = _find_candidate_paths_without_llm(
+        filtered_rows=filtered_rows,
+        start_node=payload.nodo_partenza,
+        end_node=payload.nodo_arrivo,
+        max_stop_intermedi=payload.max_stop_intermedi,
+        tempo_massimo_minuti=payload.tempo_massimo_minuti,
+        max_paths=3,
+    )
 
     try:
         llm_response = _call_gemini(prompt)
@@ -1280,15 +1288,8 @@ def cerca_itinerari(payload: CercaItinerariPayload) -> dict[str, Any]:
         if exc.status_code not in (502, 503):
             raise
 
-        raw_paths = _find_candidate_paths_without_llm(
-            filtered_rows=filtered_rows,
-            start_node=payload.nodo_partenza,
-            end_node=payload.nodo_arrivo,
-            max_stop_intermedi=payload.max_stop_intermedi,
-            tempo_massimo_minuti=payload.tempo_massimo_minuti,
-            max_paths=3,
-        )
-        if not raw_paths:
+        raw_paths = local_candidate_paths
+        if not local_candidate_paths:
             raise
 
         fallback_used = True
@@ -1296,6 +1297,16 @@ def cerca_itinerari(payload: CercaItinerariPayload) -> dict[str, Any]:
             "Gemini temporarily unavailable: route candidates generated "
             "with local deterministic fallback."
         )
+
+    # Gemini suggests and ranks routes, but it is not reliable about returning
+    # multiple alternatives. Always supplement its response with valid local
+    # graph candidates so one model suggestion cannot leave the user with one route.
+    existing_paths = {tuple(path) for path in raw_paths}
+    for candidate_path in local_candidate_paths:
+        path_key = tuple(candidate_path)
+        if path_key not in existing_paths:
+            raw_paths.append(candidate_path)
+            existing_paths.add(path_key)
 
     raw_paths = _augment_paths_with_long_candidate(
         candidate_paths=raw_paths,

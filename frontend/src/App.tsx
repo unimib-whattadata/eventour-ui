@@ -1643,7 +1643,7 @@ function MapPage({ theme }: { theme: Theme }) {
       nodo_partenza: "",
       nodo_arrivo: "",
       filtri: [],
-      max_stop_intermedi: 0,
+      max_stop_intermedi: 3,
       tempo_massimo_minuti: 60,
     },
   });
@@ -2110,7 +2110,7 @@ function MapPage({ theme }: { theme: Theme }) {
               <label className="form-control w-full">
                 <div className="label pb-1">
                   <span className="label-text">
-                    Maximum Intermediate Stops (0-10)
+                    Maximum Intermediate Stops (0-10; 0 = direct route only)
                   </span>
                 </div>
                 <input
@@ -2128,6 +2128,9 @@ function MapPage({ theme }: { theme: Theme }) {
                     {errors.max_stop_intermedi.message}
                   </span>
                 ) : null}
+                <span className="mt-1 text-xs text-base-content/60">
+                  The time limit caps travel time; allow intermediate stops to get route alternatives.
+                </span>
               </label>
 
               <label className="form-control w-full">
